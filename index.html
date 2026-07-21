@@ -16,9 +16,10 @@
         body { background-color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
         
         .no-print { padding-bottom: 60px; }
-        .gov-header { background: linear-gradient(135deg, var(--gov-blue) 0%, #0d47a1 100%); color: white; padding: 1.25rem; border-bottom: 5px solid var(--gov-red); box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
-        
-        /* Premium Security Gateway Design */
+        .gov-header { background: linear-gradient(135deg, var(--gov-blue) 0%, #0d47a1 100%); color: white; padding: 1rem 1.5rem; border-bottom: 5px solid var(--gov-red); box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .header-logo { height: 65px; width: auto; object-fit: contain; }
+
+        /* Gateway Login Interface Design */
         #loginScreen { 
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
             background: radial-gradient(circle at top right, #1e3a8a, #0f172a); 
@@ -64,7 +65,7 @@
         .btn-login:hover { background: linear-gradient(135deg, #3b82f6, #2563eb); transform: translateY(-1px); }
         .btn-login:active { transform: translateY(1px); }
 
-        /* Compulsory Date Styling */
+        /* Form & Control Styles */
         .date-container { position: relative; border: 2px solid var(--gov-red); border-radius: 12px; padding: 15px; background: #fff5f5; transition: 0.3s; }
         .date-container.missing { animation: shake 0.5s; border-color: #ff0000; box-shadow: 0 0 15px rgba(255,0,0,0.3); }
         .badge-required { font-size: 0.7rem; background: var(--gov-red); color: white; padding: 2px 8px; border-radius: 4px; vertical-align: middle; margin-left: 10px; text-transform: uppercase; }
@@ -87,30 +88,116 @@
         .nav-tabs .nav-link { font-weight: 600; color: #64748b; border: none; padding: 12px 20px; }
         .nav-tabs .nav-link.active { background-color: transparent; color: var(--gov-blue) !important; border-bottom: 3px solid var(--gov-blue); }
 
-        /* PRINT STYLES */
+        /* EXACT SINGLE-PAGE A4 PORTRAIT PRINT STYLES */
         @media print {
-            @page { size: A4 landscape; margin: 10mm; }
-            .no-print { display: none !important; }
-            #loginScreen { display: none !important; }
+            @page { 
+                size: A4 portrait; 
+                margin: 8mm; 
+            }
+            html, body {
+                height: 100%;
+                background: #fff !important;
+                font-size: 10pt !important;
+                color: #000 !important;
+            }
+            .no-print, #loginScreen { display: none !important; }
             .print-only { display: block !important; }
-            body { background: white; font-size: 11pt !important; color: black; }
-            
+
+            /* Ledger Table Mode Printing */
             .print-ledger-mode { display: block !important; background: white !important; padding: 0 !important; box-shadow: none !important; }
             .print-ledger-mode .table-responsive { overflow: visible !important; }
-            .print-ledger-mode table { width: 100% !important; border-color: #000 !important; font-size: 10pt !important; }
+            .print-ledger-mode table { width: 100% !important; border-color: #000 !important; font-size: 9pt !important; }
             .print-ledger-mode th { background-color: #f2f2f2 !important; color: black !important; -webkit-print-color-adjust: exact; }
 
-            .voucher-shell { border: 4px solid #000; padding: 35px; min-height: 275mm; display: flex; flex-direction: column; }
-            .v-header { text-align: center; border-bottom: 5px double #000; margin-bottom: 25px; }
-            .v-header h2 { font-weight: 900; font-size: 28pt; margin: 0; }
-            .date-strip { text-align: center; font-size: 18pt; font-weight: bold; background: #f0f0f0 !important; padding: 12px; border: 2px solid #000; margin-bottom: 25px; -webkit-print-color-adjust: exact; }
-            .v-table { width: 100%; border-collapse: collapse; }
-            .v-table th, .v-table td { border: 1px solid black; padding: 15px; font-size: 14pt; }
-            .v-table th { background: #eee !important; -webkit-print-color-adjust: exact; }
-            .total-section { border: 4px solid black; padding: 20px; margin-top: 30px; text-align: center; }
-            .total-amt { font-size: 28pt; font-weight: 900; }
-            .words-area { margin-top: 20px; font-size: 15pt; border-bottom: 2px solid #000; padding-bottom: 10px; line-height: 1.6; }
-            .audit-line { margin-top: 15px; padding: 10px; text-align: center; font-weight: bold; border: 2px solid #000; -webkit-print-color-adjust: exact; }
+            /* Portrait A4 Single Page Voucher */
+            .voucher-shell { 
+                border: 2px solid #000; 
+                padding: 15px 20px; 
+                width: 100%;
+                box-sizing: border-box;
+                margin: 0 auto;
+                background: #fff;
+            }
+            .v-header-block {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 15px;
+                border-bottom: 3px double #000;
+                padding-bottom: 8px;
+                margin-bottom: 12px;
+            }
+            .v-logo {
+                height: 75px;
+                width: auto;
+                object-fit: contain;
+            }
+            .v-header-titles {
+                text-align: center;
+            }
+            .v-header-titles h2 { 
+                font-weight: 900; 
+                font-size: 18pt; 
+                margin: 0; 
+                color: #000;
+            }
+            .v-header-titles p { 
+                font-size: 11pt; 
+                margin: 2px 0 0 0; 
+                font-weight: 600;
+            }
+            .date-strip { 
+                text-align: center; 
+                font-size: 12pt; 
+                font-weight: bold; 
+                background: #f0f0f0 !important; 
+                padding: 6px; 
+                border: 1.5px solid #000; 
+                margin-bottom: 15px; 
+                -webkit-print-color-adjust: exact; 
+            }
+            .v-table { 
+                width: 100%; 
+                border-collapse: collapse; 
+                margin-bottom: 15px;
+            }
+            .v-table th, .v-table td { 
+                border: 1px solid black; 
+                padding: 8px 10px; 
+                font-size: 11pt; 
+            }
+            .v-table th { 
+                background: #eee !important; 
+                -webkit-print-color-adjust: exact; 
+            }
+            .total-section { 
+                border: 2px solid black; 
+                padding: 10px; 
+                margin-top: 10px; 
+                text-align: center; 
+                background: #fafafa !important;
+                -webkit-print-color-adjust: exact;
+            }
+            .total-amt { 
+                font-size: 20pt; 
+                font-weight: 900; 
+                margin-top: 2px;
+            }
+            .words-area { 
+                margin-top: 12px; 
+                font-size: 11pt; 
+                padding-bottom: 6px; 
+                line-height: 1.4; 
+            }
+            .audit-line { 
+                margin-top: 10px; 
+                padding: 6px; 
+                text-align: center; 
+                font-weight: bold; 
+                font-size: 10pt;
+                border: 1.5px solid #000; 
+                -webkit-print-color-adjust: exact; 
+            }
         }
         @media screen { .print-only { display: none; } }
     </style>
@@ -150,7 +237,10 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // Configuration: Deployed Google Apps Script Web App Endpoint URL Target
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxRgr4cKZEFrZpHPzMyPifoBS5GFlSiMazZCQiO6UWI_tvU4GNTxclhEJ9kWMV2b959/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyq-egaXnOtaADLP1jyaB7clrC_BkeC1HUbD1koA7lVJT9T7Tsah7ZoSykf5VhEQMDn/exec";
+
+    // SVG Base64 / Direct Image URL for Official Emblem
+    const EMBLEM_URL = "https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg";
 
     // User session properties
     let sessionUser = "";
@@ -158,12 +248,15 @@
     let sessionRole = "";
     let allReportsCache = [];
 
-    // Pure DOM Obfuscated Layout Framework Template 
+    // Dashboard Layout Structure
     const OBFUSCATED_APP_LAYOUT = `
         <div class="gov-header d-flex justify-content-between align-items-center px-4 no-print">
-            <div class="text-center mx-auto">
-                <h1 class="m-0 h2 fw-bold">गण्डकी प्रदेश</h1>
-                <h3 class="m-0 h5 mt-1 opacity-90">यातायात व्यवस्था कार्यालय बागलुङ (VRS/EDLRS)</h3>
+            <div class="d-flex align-items-center gap-3">
+                <img src="${EMBLEM_URL}" alt="Emblem" class="header-logo">
+                <div>
+                    <h1 class="m-0 h3 fw-bold">गण्डकी प्रदेश सरकार</h1>
+                    <h3 class="m-0 h6 mt-1 opacity-90">भौतिक पूर्वाधार विकास तथा यातायात व्यवस्था मन्त्रालय | यातायात व्यवस्था कार्यालय बागलुङ</h3>
+                </div>
             </div>
             <button class="btn btn-sm btn-outline-light fw-bold px-3 d-flex align-items-center gap-1" onclick="handleSystemLogout()">
                 <i class="bi bi-box-arrow-right"></i> Terminate (<span id="displayUser"></span>)
@@ -241,6 +334,7 @@
                 <!-- TAB 2: ACCOUNT REPORT HISTORIES WITH DATE-RANGE FILTER -->
                 <div class="tab-pane fade print-ledger-mode" id="reportView" role="tabpanel">
                     <div class="print-only text-center mb-4">
+                        <img src="${EMBLEM_URL}" alt="Emblem" style="height:60px;" class="mb-2">
                         <h2>यातायात व्यवस्था कार्यालय बागलुङ</h2>
                         <h5 class="text-secondary m-0">सवारी तथा संकलित राजस्व विवरण सूची लेखा लेजर</h5>
                         <hr style="border-top: 3px double #000;">
@@ -297,7 +391,7 @@
                     <div class="row justify-content-center mt-4">
                         <div class="col-md-6">
                             <div class="card p-4 border-danger">
-                                <h4 class="fw-bold text-danger mb-4"><i class="bi bi-person-plus-fill"></i> Create System User</h4>
+                                <h4 class="fw-bold text-danger mb-4"><i class="bi bi-shield-lock-fill"></i> Create System User</h4>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold small text-muted">New Username</label>
                                     <input type="text" id="regUser" class="form-control" placeholder="e.g. clerk_hari">
@@ -324,32 +418,47 @@
             </div>
         </div>
 
-        <!-- VOUCHER STATEMENT OVERLAY ONLY ACCESSED VIA PRINT -->
+        <!-- PORTRAIT A4 SINGLE PAGE PRINT VOUCHER -->
         <div class="print-only">
             <div class="voucher-shell">
-                <div class="v-header">
-                    <h2>यातायात व्यवस्था कार्यालय बागलुङ </h2>
-                    <p style="font-size: 16pt;">गण्डकी प्रदेश सरकार | Daily Revenue Statement</p>
+                <div class="v-header-block">
+                    <img src="${EMBLEM_URL}" alt="Nepal Emblem Logo" class="v-logo">
+                    <div class="v-header-titles">
+                        <h2>गण्डकी प्रदेश सरकार</h2>
+                        <p>भौतिक पूर्वाधार विकास तथा यातायात व्यवस्था मन्त्रालय</p>
+                        <p style="font-size: 13pt; font-weight: 800;">यातायात व्यवस्था कार्यालय बागलुङ</p>
+                        <p style="font-size: 10pt; text-decoration: underline; margin-top:2px;">दैनिक राजस्व संकलन भौचर (Daily Revenue Collection Voucher)</p>
+                    </div>
                 </div>
+
                 <div class="date-strip">मिति (B.S.): <span id="pDate"></span></div>
+
                 <table class="v-table">
                     <thead>
-                        <tr><th width="15%">Head</th><th width="55%">Title Classification</th><th width="30%" style="text-align: right;">Amount (Rs.)</th></tr>
+                        <tr>
+                            <th width="18%">राजस्व शीर्षक</th>
+                            <th width="52%">विवरण (Revenue Title Classification)</th>
+                            <th width="30%" style="text-align: right;">रकम (Rs.)</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        <tr><td>33341</td><td>सवारी कर (Vehicle Tax)</td><td style="text-align: right;" id="p33341"></td></tr>
-                        <tr><td>14256</td><td>स‍ चा अ प/ब्लबुक नविकरण (Fees)</td><td style="text-align: right;" id="p14256"></td></tr>
-                        <tr><td>14225</td><td>रुट पर्मिट (Route Permit)</td><td style="text-align: right;" id="p14225"></td></tr>
-                        <tr><td>11111</td><td>आयकर (Income Tax)</td><td style="text-align: right;" id="p11111"></td></tr>
-                        <tr style="background:#f2f2f2"><td>RMIS</td><td>Reference Record (Non-Adding)</td><td style="text-align: right;" id="pRMIS"></td></tr>
+                        <tr><td>33341</td><td>सवारी साधन कर (Vehicle Tax)</td><td style="text-align: right;" id="p33341">0</td></tr>
+                        <tr><td>14256</td><td>सवारी चालक अनुमतिपत्र / दर्ता किताब नविकरण दस्तुर</td><td style="text-align: right;" id="p14256">0</td></tr>
+                        <tr><td>14225</td><td>सवारी इजाजतपत्र दस्तुर / रुट पर्मिट (Route Permit)</td><td style="text-align: right;" id="p14225">0</td></tr>
+                        <tr><td>11111</td><td>आयकर (Income Tax)</td><td style="text-align: right;" id="p11111">0</td></tr>
+                        <tr style="background:#f9f9f9"><td>RMIS</td><td>RMIS Reference Record (Non-Adding)</td><td style="text-align: right;" id="pRMIS">0</td></tr>
                     </tbody>
                 </table>
+
                 <div class="total-section">
-                    <div style="font-size: 14pt; font-weight: bold; letter-spacing: 1px;">TOTAL REVENUE COLLECTION</div>
-                    <div class="total-amt">Rs. <span id="pTotal"></span> /-</div>
+                    <div style="font-size: 12pt; font-weight: bold; letter-spacing: 0.5px;">जम्मा संकलित राजस्व (TOTAL REVENUE COLLECTION)</div>
+                    <div class="total-amt">Rs. <span id="pTotal">0</span> /-</div>
                     <div id="pAuditStatus" class="audit-line"></div>
                 </div>
-                <div class="words-area"><strong>Amount in Words:</strong> Rupees <span id="pWords"></span> Only.</div>
+
+                <div class="words-area">
+                    <strong>अक्षरेपी (Amount in Words):</strong> रू. <span id="pWords">Zero</span> मात्र।
+                </div>
             </div>
         </div>
     `;
@@ -372,7 +481,6 @@
         alertBox.classList.add('d-none');
 
         try {
-            // Ping backend to authenticate
             const secureUrl = `${WEB_APP_URL}?uid=${encodeURIComponent(uid)}&pass=${encodeURIComponent(upass)}&action=login`;
             const response = await fetch(secureUrl);
             const data = await response.json();
@@ -382,18 +490,15 @@
                 alertBox.classList.remove('d-none');
                 document.getElementById('userInputPass').value = "";
             } else if (data.success) {
-                // Successful Login!
                 sessionUser = uid;
                 sessionPass = upass;
-                sessionRole = data.role; // Extract role from sheets (admin or user)
+                sessionRole = data.role;
                 
-                // Mount the Application Dashboard
                 document.getElementById('loginScreen').style.setProperty('display', 'none', 'important');
                 document.getElementById('systemContentMountPoint').innerHTML = OBFUSCATED_APP_LAYOUT;
                 
                 document.getElementById('displayUser').innerText = sessionUser.toUpperCase();
 
-                // Unhide the Admin panel if user is an admin
                 if (sessionRole === "admin") {
                     document.getElementById('adminTabLi').classList.remove('d-none');
                 }
