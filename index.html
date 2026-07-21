@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VRS Official - Baglung (Date Range Ledger)</title>
+    <title>VRS Official - Baglung (Separated License & Clean Voucher)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
@@ -236,19 +236,15 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Configuration: Deployed Google Apps Script Web App Endpoint URL Target
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyq-egaXnOtaADLP1jyaB7clrC_BkeC1HUbD1koA7lVJT9T7Tsah7ZoSykf5VhEQMDn/exec";
-
-    // SVG Base64 / Direct Image URL for Official Emblem
+    // Paste your copied Google Apps Script Web App URL below
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyXC5iRQUZbxNZJDNCUVzITC-XAAp2_ZuhkSWE09BCf2uhTWTd-EFrfqtj-fq6bMR8x/exec";
     const EMBLEM_URL = "https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg";
 
-    // User session properties
     let sessionUser = "";
     let sessionPass = "";
     let sessionRole = "";
     let allReportsCache = [];
 
-    // Dashboard Layout Structure
     const OBFUSCATED_APP_LAYOUT = `
         <div class="gov-header d-flex justify-content-between align-items-center px-4 no-print">
             <div class="d-flex align-items-center gap-3">
@@ -289,15 +285,15 @@
 
                                 <h5 class="fw-bold mb-3 text-secondary">Revenue Classification (Title-Wise)</h5>
                                 <div class="row g-3">
-                                    <div class="col-md-6"><label class="small fw-bold">33341 (सवारी कर)</label><input type="number" id="h33341" class="form-control" value="0" oninput="update()"></div>
+                                    <div class="col-md-6"><label class="small fw-bold">33341 (सवारी साधन कर)</label><input type="number" id="h33341" class="form-control" value="0" oninput="update()"></div>
+                                    <div class="col-md-6"><label class="small fw-bold">14256 (दर्ता किताब नविकरण)</label><input type="number" id="h14256" class="form-control" value="0" oninput="update()"></div>
                                     <div class="col-md-6"><label class="small fw-bold">14225 (रुट पर्मिट)</label><input type="number" id="h14225" class="form-control" value="0" oninput="update()"></div>
-                                    <div class="col-md-6"><label class="small fw-bold">14256 (नविकरण)</label><input type="number" id="h14256" class="form-control" value="0" oninput="update()"></div>
                                     <div class="col-md-6"><label class="small fw-bold">11111 (आयकर)</label><input type="number" id="h11111" class="form-control" value="0" oninput="update()"></div>
                                     <div class="col-md-6">
-                                        <div class="lic-box"><label class="small fw-bold text-primary">License (Adds to 14256)</label><input type="number" id="lic" class="form-control border-primary" value="0" oninput="update()"></div>
+                                        <div class="lic-box"><label class="small fw-bold text-primary">💳 License Revenue (सवारी चालक अनुमतिपत्र)</label><input type="number" id="lic" class="form-control border-primary" value="0" oninput="update()"></div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="rmis-box"><label class="small fw-bold" style="color:#9c27b0">RMIS (Reference Only)</label><input type="number" id="rmis" class="form-control border-purple" value="0" oninput="update()"></div>
+                                        <div class="rmis-box"><label class="small fw-bold" style="color:#9c27b0">RMIS (Reference Record)</label><input type="number" id="rmis" class="form-control border-purple" value="0" oninput="update()"></div>
                                     </div>
                                 </div>
                             </div>
@@ -367,10 +363,10 @@
                                     <tr>
                                         <th>Date (B.S.)</th>
                                         <th>33341<br>Vehicle Tax</th>
-                                        <th>14225<br>Route Permit</th>
                                         <th>14256<br>Renewals</th>
+                                        <th>License<br>(सवारी चालक)</th>
+                                        <th>14225<br>Route Permit</th>
                                         <th>11111<br>Income Tax</th>
-                                        <th>License</th>
                                         <th>RMIS</th>
                                         <th>Cheque</th>
                                         <th class="table-primary text-dark">Total Revenue</th>
@@ -386,7 +382,7 @@
                     </div>
                 </div>
 
-                <!-- TAB 3: ADMIN PANEL (HIDDEN BY DEFAULT) -->
+                <!-- TAB 3: ADMIN PANEL -->
                 <div class="tab-pane fade no-print" id="adminView" role="tabpanel">
                     <div class="row justify-content-center mt-4">
                         <div class="col-md-6">
@@ -418,7 +414,7 @@
             </div>
         </div>
 
-        <!-- PORTRAIT A4 SINGLE PAGE PRINT VOUCHER -->
+        <!-- PORTRAIT A4 SINGLE PAGE PRINT VOUCHER (CLEAN - NO SIGNATURE LINES) -->
         <div class="print-only">
             <div class="voucher-shell">
                 <div class="v-header-block">
@@ -443,7 +439,8 @@
                     </thead>
                     <tbody>
                         <tr><td>33341</td><td>सवारी साधन कर (Vehicle Tax)</td><td style="text-align: right;" id="p33341">0</td></tr>
-                        <tr><td>14256</td><td>सवारी चालक अनुमतिपत्र / दर्ता किताब नविकरण दस्तुर</td><td style="text-align: right;" id="p14256">0</td></tr>
+                        <tr><td>14256</td><td>दर्ता किताब नविकरण / नवीकरण दस्तुर</td><td style="text-align: right;" id="p14256">0</td></tr>
+                        <tr><td>License</td><td>सवारी चालक अनुमतिपत्र दस्तुर (License Fee)</td><td style="text-align: right; font-weight: bold;" id="pLic">0</td></tr>
                         <tr><td>14225</td><td>सवारी इजाजतपत्र दस्तुर / रुट पर्मिट (Route Permit)</td><td style="text-align: right;" id="p14225">0</td></tr>
                         <tr><td>11111</td><td>आयकर (Income Tax)</td><td style="text-align: right;" id="p11111">0</td></tr>
                         <tr style="background:#f9f9f9"><td>RMIS</td><td>RMIS Reference Record (Non-Adding)</td><td style="text-align: right;" id="pRMIS">0</td></tr>
@@ -463,7 +460,6 @@
         </div>
     `;
 
-    // Intercept Enter key inside auth form fields
     document.querySelectorAll('#userInputId, #userInputPass').forEach(input => {
         input.addEventListener('keyup', (e) => { if(e.key === 'Enter') handleSystemLogin(); });
     });
@@ -603,8 +599,7 @@
         const rm = parseFloat(document.getElementById('rmis').value) || 0;
         const chq = parseFloat(document.getElementById('chequeAmt').value) || 0;
 
-        const merged14256 = v2 + lic;
-        const totalRev = v1 + merged14256 + v3 + v4;
+        const totalRev = v1 + v2 + lic + v3 + v4;
 
         let cashOnly = 0;
         document.querySelectorAll('.c-in').forEach(i => {
@@ -632,7 +627,8 @@
 
         document.getElementById('pDate').innerText = bs || "________________";
         document.getElementById('p33341').innerText = v1.toLocaleString();
-        document.getElementById('p14256').innerText = merged14256.toLocaleString();
+        document.getElementById('p14256').innerText = v2.toLocaleString();
+        document.getElementById('pLic').innerText = lic.toLocaleString();
         document.getElementById('p14225').innerText = v3.toLocaleString();
         document.getElementById('p11111').innerText = v4.toLocaleString();
         document.getElementById('pRMIS').innerText = rm.toLocaleString();
@@ -658,14 +654,15 @@
         const payload = {
             userId: sessionUser, password: sessionPass, action: "saveLedger", bsDate: bsDate,
             h33341: parseFloat(document.getElementById('h33341').value) || 0,
-            h14225: parseFloat(document.getElementById('h14225').value) || 0,
             h14256: parseFloat(document.getElementById('h14256').value) || 0,
-            h11111: parseFloat(document.getElementById('h11111').value) || 0,
             lic: parseFloat(document.getElementById('lic').value) || 0,
+            h14225: parseFloat(document.getElementById('h14225').value) || 0,
+            h11111: parseFloat(document.getElementById('h11111').value) || 0,
             rmis: parseFloat(document.getElementById('rmis').value) || 0,
             chequeAmt: parseFloat(document.getElementById('chequeAmt').value) || 0,
             totalRev: (parseFloat(document.getElementById('h33341').value) || 0) + 
-                      ((parseFloat(document.getElementById('h14256').value) || 0) + (parseFloat(document.getElementById('lic').value) || 0)) + 
+                      (parseFloat(document.getElementById('h14256').value) || 0) + 
+                      (parseFloat(document.getElementById('lic').value) || 0) + 
                       (parseFloat(document.getElementById('h14225').value) || 0) + 
                       (parseFloat(document.getElementById('h11111').value) || 0)
         };
@@ -714,14 +711,14 @@
         tbody.innerHTML = dataset.map(row => `
             <tr>
                 <td class="fw-bold text-dark">${row.bsDate}</td>
-                <td>${Number(row.h33341 || row.h11451 || 0).toLocaleString()}</td>
-                <td>${Number(row.h14225).toLocaleString()}</td>
-                <td>${Number(row.h14256 || row.h11621 || 0).toLocaleString()}</td>
-                <td>${Number(row.h11111).toLocaleString()}</td>
-                <td class="text-primary">${Number(row.lic).toLocaleString()}</td>
-                <td class="text-purple">${Number(row.rmis).toLocaleString()}</td>
-                <td class="text-warning bg-light">${Number(row.chequeAmt).toLocaleString()}</td>
-                <td class="fw-bold bg-light text-success">${Number(row.totalRev).toLocaleString()}</td>
+                <td>${Number(row.h33341 || 0).toLocaleString()}</td>
+                <td>${Number(row.h14256 || 0).toLocaleString()}</td>
+                <td class="text-primary fw-bold">${Number(row.lic || 0).toLocaleString()}</td>
+                <td>${Number(row.h14225 || 0).toLocaleString()}</td>
+                <td>${Number(row.h11111 || 0).toLocaleString()}</td>
+                <td class="text-purple">${Number(row.rmis || 0).toLocaleString()}</td>
+                <td class="text-warning bg-light">${Number(row.chequeAmt || 0).toLocaleString()}</td>
+                <td class="fw-bold bg-light text-success">${Number(row.totalRev || 0).toLocaleString()}</td>
             </tr>
         `).join('');
     }
