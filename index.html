@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VRS Official - Live Google Sheet Sync</title>
+    <title>VRS Official - Live Ledger Reports</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <!-- PapaParse for CSV Parsing -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
         :root { 
@@ -16,7 +14,7 @@
             --gov-red: #d32f2f; 
             --mustard: #ffca28; 
         }
-        body { background-color: #1a237e; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+        body { background-color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
         .gov-header { background: linear-gradient(135deg, #1a237e 0%, var(--gov-blue) 100%); color: white; padding: 1rem 1.5rem; border-bottom: 5px solid var(--gov-red); box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
         .header-logo { height: 65px; width: auto; object-fit: contain; }
 
@@ -35,10 +33,24 @@
         .total-col-header { background-color: #d0e1fd !important; color: #0d47a1 !important; }
         .cheque-text { color: #b78103; font-weight: 600; }
 
+        /* Login Modal Custom Styling */
         #loginOverlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #234ca1;
-            z-index: 9999; display: flex; align-items: center; justify-content: center;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(13, 71, 161, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            background: #ffffff;
+            overflow: hidden;
         }
 
         @media print {
@@ -66,39 +78,42 @@
 
     <!-- LOGIN OVERLAY -->
     <div id="loginOverlay">
-        <div class="card p-4 shadow-lg border-0" style="max-width: 400px; width: 90%; border-radius: 20px;">
+        <div class="login-card p-4">
             <div class="text-center mb-4">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg" height="70" alt="Emblem" class="mb-2">
-                <h5 class="fw-bold text-primary m-0">VRS Official Login</h5>
-                <small class="text-muted">यातायात व्यवस्था कार्यालय बागलुङ</small>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg" alt="Emblem" style="height: 70px;">
+                <h5 class="fw-bold mt-2 text-primary">यातायात व्यवस्था कार्यालय बागलुङ</h5>
+                <p class="small text-muted m-0">Revenue Ledger System - Authorization Required</p>
             </div>
-            <div id="loginError" class="alert alert-danger py-2 small d-none" role="alert">
-                ❌ Invalid Username or Password!
+            
+            <div id="loginAlert" class="alert alert-danger d-none small py-2 text-center" role="alert">
+                Invalid Username or Password!
             </div>
+
             <form onsubmit="handleLogin(event)">
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">User ID</label>
+                    <label class="form-label small fw-bold text-secondary">User ID</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                        <input type="text" id="loginUser" class="form-control" placeholder="Enter Username" required>
+                        <input type="text" id="loginUser" class="form-control" placeholder="Enter User ID" required>
                     </div>
                 </div>
                 <div class="mb-4">
-                    <label class="form-label small fw-bold">Password</label>
+                    <label class="form-label small fw-bold text-secondary">Password</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
                         <input type="password" id="loginPass" class="form-control" placeholder="Enter Password" required>
                     </div>
                 </div>
-                <button type="submit" id="loginBtn" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
-                    🔒 LOGIN TO ACCESS
+                <button type="submit" class="btn btn-primary w-100 fw-bold py-2">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Login to System
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- MAIN APP CONTENT -->
-    <div id="mainContent" class="d-none" style="background-color: #f8fafc; min-height: 100vh;">
+    <!-- MAIN APP CONTENT (Hidden until authenticated) -->
+    <div id="appContainer" style="display: none;">
+        <!-- HEADER -->
         <div class="gov-header d-flex justify-content-between align-items-center px-4 no-print">
             <div class="d-flex align-items-center gap-3">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg" alt="Emblem" class="header-logo">
@@ -107,13 +122,10 @@
                     <h3 class="m-0 h6 mt-1 opacity-90">भौतिक पूर्वाधार विकास तथा यातायात व्यवस्था मन्त्रालय | यातायात व्यवस्था कार्यालय बागलुङ</h3>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-3">
-                <div class="text-end text-white">
-                    <div class="fw-bold" id="currentUserDisplay">Admin</div>
-                    <span class="badge bg-danger text-uppercase" id="currentRoleBadge">ADMIN PANEL</span>
-                </div>
-                <button class="btn btn-danger btn-sm fw-bold shadow-sm" onclick="logout()">
-                    <i class="bi bi-power"></i> LOGOUT
+            <div class="text-end text-white d-flex align-items-center gap-3">
+                <span class="badge bg-light text-primary fw-bold px-3 py-2">APPS SCRIPT CONNECTED</span>
+                <button class="btn btn-outline-light btn-sm fw-bold" onclick="handleLogout()">
+                    <i class="bi bi-power"></i> Logout
                 </button>
             </div>
         </div>
@@ -121,15 +133,66 @@
         <div class="container mt-4">
             <ul class="nav nav-tabs mb-4 no-print" id="appTabs" role="tablist">
                 <li class="nav-item">
-                    <button class="nav-link" id="entry-tab" data-bs-toggle="tab" data-bs-target="#entryView" type="button">📝 Revenue Entry Form</button>
+                    <button class="nav-link active" id="report-tab" data-bs-toggle="tab" data-bs-target="#reportView" type="button" onclick="loadSheetData()">📊 Date-Wise Account Reports</button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link active" id="report-tab" data-bs-toggle="tab" data-bs-target="#reportView" type="button" onclick="loadCSVDataDirectly()">📊 Date-Wise Account Reports</button>
+                    <button class="nav-link" id="entry-tab" data-bs-toggle="tab" data-bs-target="#entryView" type="button">📝 Revenue Entry Form</button>
                 </li>
             </ul>
 
             <div class="tab-content">
-                <!-- TAB 1: ENTRY FORM -->
+                <!-- TAB 1: REPORTS VIEW -->
+                <div class="tab-pane fade show active" id="reportView" role="tabpanel">
+                    <div class="card report-card p-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 no-print">
+                            <h4 class="fw-bold text-secondary m-0">Date-Wise Ledger Entries</h4>
+                            
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <div class="input-group input-group-sm" style="max-width: 440px;">
+                                    <span class="input-group-text bg-light fw-bold text-secondary">From (B.S.)</span>
+                                    <input type="text" id="fromDate" class="form-control text-center fw-bold" placeholder="२०८३-०४-०१">
+                                    <span class="input-group-text bg-light fw-bold text-secondary">To (B.S.)</span>
+                                    <input type="text" id="toDate" class="form-control text-center fw-bold" placeholder="२०८३-०४-३०">
+                                    <button class="btn btn-primary fw-bold" onclick="filterReportData()">
+                                        <i class="bi bi-search"></i> Filter
+                                    </button>
+                                </div>
+
+                                <button class="btn btn-outline-secondary btn-sm fw-bold px-3" onclick="clearDateFilter()">Clear</button>
+                                <button class="btn btn-outline-primary btn-sm fw-bold px-3" onclick="loadSheetData()">
+                                    <i class="bi bi-arrow-repeat"></i> Sync Sheet
+                                </button>
+                                <button class="btn btn-dark btn-sm fw-bold px-3" onclick="window.print()">
+                                    <i class="bi bi-printer-fill"></i> Print Ledger
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle text-center small mb-0 table-ledger">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th width="14%">Date (B.S.)</th>
+                                        <th width="12%">33341<br><span class="fw-normal">Vehicle Tax</span></th>
+                                        <th width="15%">14256<br><span class="fw-normal">Renewals / License</span></th>
+                                        <th width="13%">14225<br><span class="fw-normal">Route Permit</span></th>
+                                        <th width="13%">11111<br><span class="fw-normal">Income Tax</span></th>
+                                        <th width="10%">RMIS</th>
+                                        <th width="10%" style="color: #ffca28;">Cheque</th>
+                                        <th width="13%" class="total-col-header">Total Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportTableBody">
+                                    <tr>
+                                        <td colspan="8" class="text-muted p-4">Loading report data...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: ENTRY FORM -->
                 <div class="tab-pane fade no-print" id="entryView" role="tabpanel">
                     <div class="row g-4">
                         <div class="col-lg-7">
@@ -197,61 +260,15 @@
                                     ✅ REVENUE BALANCED
                                 </div>
 
-                                <button class="btn btn-primary w-100 py-3 mt-4 fw-bold" onclick="validateAndPrint()">
-                                    🖨️ GENERATE & PRINT VOUCHER
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TAB 2: REPORTS VIEW -->
-                <div class="tab-pane fade show active" id="reportView" role="tabpanel">
-                    <div class="card report-card p-4">
-                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 no-print">
-                            <h4 class="fw-bold text-secondary m-0">Date-Wise Ledger Entries</h4>
-                            
-                            <div class="d-flex align-items-center gap-2 flex-wrap">
-                                <div class="input-group input-group-sm" style="max-width: 440px;">
-                                    <span class="input-group-text bg-light fw-bold text-secondary">From (B.S.)</span>
-                                    <input type="text" id="fromDate" class="form-control text-center fw-bold" value="२०८३-०४-०१">
-                                    <span class="input-group-text bg-light fw-bold text-secondary">To (B.S.)</span>
-                                    <input type="text" id="toDate" class="form-control text-center fw-bold" value="२०८३-०४-३०">
-                                    <button class="btn btn-primary fw-bold" onclick="filterReportData()">
-                                        <i class="bi bi-search"></i> Filter
+                                <div class="d-grid gap-2 mt-4">
+                                    <button class="btn btn-success py-3 fw-bold" id="saveBtn" onclick="saveToGoogleSheet()">
+                                        ☁️ SAVE TO GOOGLE SHEET
+                                    </button>
+                                    <button class="btn btn-primary py-2 fw-bold" onclick="validateAndPrint()">
+                                        🖨️ PRINT VOUCHER
                                     </button>
                                 </div>
-
-                                <button class="btn btn-outline-secondary btn-sm fw-bold px-3" onclick="clearDateFilter()">Clear</button>
-                                <button class="btn btn-outline-primary btn-sm fw-bold px-3" onclick="loadCSVDataDirectly()">
-                                    <i class="bi bi-arrow-repeat"></i> Sync Sheet
-                                </button>
-                                <button class="btn btn-dark btn-sm fw-bold px-3" onclick="window.print()">
-                                    <i class="bi bi-printer-fill"></i> Print Ledger
-                                </button>
                             </div>
-                        </div>
-
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover align-middle text-center small mb-0 table-ledger">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th width="14%">Date (B.S.)</th>
-                                        <th width="12%">33341<br><span class="fw-normal">Vehicle Tax</span></th>
-                                        <th width="15%">14256<br><span class="fw-normal">Renewals / License</span></th>
-                                        <th width="13%">14225<br><span class="fw-normal">Route Permit</span></th>
-                                        <th width="13%">11111<br><span class="fw-normal">Income Tax</span></th>
-                                        <th width="10%">RMIS</th>
-                                        <th width="10%" style="color: #ffca28;">Cheque</th>
-                                        <th width="13%" class="total-col-header">Total Revenue</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="reportTableBody">
-                                    <tr>
-                                        <td colspan="8" class="text-muted p-4">Loading report data...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
@@ -297,85 +314,114 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // AUTOMATIC CONVERSION FROM PUBHTML TO RAW CSV FEED
-    const RAW_PUB_LINK = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQDAUG5ylei5zL0GSyxafXgnE48WwpWBn0Mfn-OQLMBE-tnaC_GeGuuhjbHYz1D83NkOMa0PPFohtUu/pubhtml";
-    const TARGET_CSV_URL = RAW_PUB_LINK.replace(/\/pubhtml.*/, '/pub?gid=0&single=true&output=csv');
+    // ⚠️ REPLACE THIS WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnXQzG1IxvrddIXiQH2ZJVRIZP-NRCPhPuGvxJtS94kASbSDM-DhQS4vn6MoIy5ZiP/exec";
 
-    let currentUser = null;
     let allReportRows = [];
 
-    // Parse CSV rows dynamically using PapaParse
-    function fetchParsedCSV() {
-        return new Promise((resolve, reject) => {
-            Papa.parse(TARGET_CSV_URL, {
-                download: true,
-                skipEmptyLines: true,
-                complete: (results) => resolve(results.data),
-                error: (err) => reject(err)
-            });
-        });
-    }
+    // Login Credentials
+    const AUTH_USER = "admin";
+    const AUTH_PASS = "R522051";
 
-    async function handleLogin(e) {
-        e.preventDefault();
-        const btn = document.getElementById('loginBtn');
-        btn.innerText = "⚡ Checking Sheet Credentials...";
-        btn.disabled = true;
-
-        const user = document.getElementById('loginUser').value.trim();
-        const pass = document.getElementById('loginPass').value.trim();
-        const errDiv = document.getElementById('loginError');
-        errDiv.classList.add('d-none');
-
-        try {
-            const rows = await fetchParsedCSV();
-            let matched = false;
-
-            // Search rows for Username (Col 0) and Password (Col 1)
-            for (let i = 0; i < rows.length; i++) {
-                const rowUser = rows[i][0] ? String(rows[i][0]).trim() : "";
-                const rowPass = rows[i][1] ? String(rows[i][1]).trim() : "";
-                const rowRole = rows[i][2] ? String(rows[i][2]).trim() : "ADMIN PANEL";
-
-                if (rowUser === user && rowPass === pass) {
-                    matched = true;
-                    currentUser = { username: rowUser, role: rowRole };
-                    break;
-                }
-            }
-
-            if (matched) {
-                sessionStorage.setItem("vrs_session", JSON.stringify(currentUser));
-                applyPermissions();
-            } else {
-                errDiv.classList.remove('d-none');
-            }
-        } catch (err) {
-            console.error("Authentication Error:", err);
-            alert("Error reading credentials from Google Sheet link!");
-        } finally {
-            btn.innerText = "🔒 LOGIN TO ACCESS";
-            btn.disabled = false;
+    function checkAuth() {
+        if (sessionStorage.getItem("vrs_authenticated") === "true") {
+            document.getElementById("loginOverlay").style.display = "none";
+            document.getElementById("appContainer").style.display = "block";
+            loadSheetData();
+        } else {
+            document.getElementById("loginOverlay").style.display = "flex";
+            document.getElementById("appContainer").style.display = "none";
         }
     }
 
-    async function loadCSVDataDirectly() {
+    function handleLogin(event) {
+        event.preventDefault();
+        const userInput = document.getElementById("loginUser").value.trim();
+        const passInput = document.getElementById("loginPass").value.trim();
+        const alertBox = document.getElementById("loginAlert");
+
+        if (userInput === AUTH_USER && passInput === AUTH_PASS) {
+            sessionStorage.setItem("vrs_authenticated", "true");
+            alertBox.classList.add("d-none");
+            checkAuth();
+        } else {
+            alertBox.classList.remove("d-none");
+        }
+    }
+
+    function handleLogout() {
+        sessionStorage.removeItem("vrs_authenticated");
+        checkAuth();
+    }
+
+    // Load data from Google Sheet via Apps Script
+    async function loadSheetData() {
         const tbody = document.getElementById('reportTableBody');
         tbody.innerHTML = `<tr><td colspan="8" class="text-primary fw-bold p-4">⚡ Syncing live data from Google Sheet...</td></tr>`;
 
         try {
-            const rows = await fetchParsedCSV();
+            const response = await fetch(APPS_SCRIPT_URL);
+            const rows = await response.json();
+
             if (!rows || rows.length <= 1) {
                 tbody.innerHTML = `<tr><td colspan="8" class="text-muted p-4">No data available in Google Sheet.</td></tr>`;
                 return;
             }
 
-            // Exclude header row (row 0)
+            // Exclude header row
             allReportRows = rows.slice(1);
             filterReportData();
 
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-danger p-4">Failed to load ledger data.</td></tr>`;
+            console.error("Sheet Sync Error:", err);
+            tbody.innerHTML = `<tr><td colspan="8" class="text-danger p-4">Failed to load ledger data. Check Apps Script URL configuration.</td></tr>`;
+        }
+    }
+
+    // Save new entry form to Google Sheet database
+    async function saveToGoogleSheet() {
+        const bsDate = document.getElementById('bsDate').value.trim();
+        if (!bsDate) {
+            alert("🛑 Please enter Nepali B.S. Date before saving.");
+            return;
+        }
+
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.disabled = true;
+        saveBtn.innerText = "⏳ Saving to Sheet...";
+
+        const v1 = parseFloat(document.getElementById('h33341').value) || 0;
+        const v2 = parseFloat(document.getElementById('h14256').value) || 0;
+        const v3 = parseFloat(document.getElementById('h14225').value) || 0;
+        const v4 = parseFloat(document.getElementById('h11111').value) || 0;
+
+        const payload = {
+            date: bsDate,
+            v33341: v1,
+            v14256: v2,
+            v14225: v3,
+            v11111: v4,
+            rmis: parseFloat(document.getElementById('rmis').value) || 0,
+            cheque: parseFloat(document.getElementById('chequeAmt').value) || 0,
+            total: (v1 + v2 + v3 + v4)
+        };
+
+        try {
+            await fetch(APPS_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            alert("✅ Entry saved to Google Sheet database!");
+            loadSheetData(); // Refresh table view automatically
+        } catch (error) {
+            console.error("Error saving data:", error);
+            alert("❌ Failed to save entry to Google Sheet.");
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerText = "☁️ SAVE TO GOOGLE SHEET";
         }
     }
 
@@ -442,21 +488,6 @@
         renderReportTable(allReportRows);
     }
 
-    function applyPermissions() {
-        document.getElementById('loginOverlay').classList.add('d-none');
-        document.getElementById('mainContent').classList.remove('d-none');
-        document.getElementById('currentUserDisplay').innerText = currentUser.username;
-
-        initializeDenominations();
-        update();
-        loadCSVDataDirectly();
-    }
-
-    function logout() {
-        sessionStorage.removeItem("vrs_session");
-        location.reload();
-    }
-
     function syncFromLicense() {
         document.getElementById('h14256').value = document.getElementById('licenseAmt').value;
         update();
@@ -510,11 +541,9 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-        const session = sessionStorage.getItem("vrs_session");
-        if (session) {
-            currentUser = JSON.parse(session);
-            applyPermissions();
-        }
+        initializeDenominations();
+        update();
+        checkAuth();
     });
 
     function validateAndPrint() {
