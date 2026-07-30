@@ -36,6 +36,16 @@
         .total-col-header { background-color: #d0e1fd !important; color: #0d47a1 !important; }
         .cheque-text { color: #b78103; font-weight: 600; }
 
+        /* Summary Footer Style */
+        .table-ledger tfoot tr {
+            background-color: #212529 !important;
+            color: #ffffff !important;
+            font-size: 0.92rem;
+        }
+        .table-ledger tfoot td {
+            border-top: 3px double #0d47a1;
+        }
+
         #loginOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -188,6 +198,19 @@
                                         <td colspan="8" class="text-muted p-4">Loading report data...</td>
                                     </tr>
                                 </tbody>
+                                <!-- TOTAL SUMMARY FOOTER -->
+                                <tfoot>
+                                    <tr class="fw-bold align-middle">
+                                        <td class="text-uppercase bg-dark text-warning">GRAND TOTAL</td>
+                                        <td id="tot33341">0</td>
+                                        <td id="tot14256">0</td>
+                                        <td id="tot14225">0</td>
+                                        <td id="tot11111">0</td>
+                                        <td id="totRMIS">0</td>
+                                        <td id="totCheque" style="color: #ffca28;">0</td>
+                                        <td id="totGrandTotal" class="bg-primary text-white">0</td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
@@ -384,6 +407,7 @@
 
             if (!rows || rows.length <= 1) {
                 tbody.innerHTML = `<tr><td colspan="8" class="text-muted p-4">No data available in Google Sheet.</td></tr>`;
+                resetTotals();
                 return;
             }
 
@@ -393,6 +417,7 @@
         } catch (err) {
             console.error("Sheet Sync Error:", err);
             tbody.innerHTML = `<tr><td colspan="8" class="text-danger p-4">Failed to load ledger data. Check Apps Script URL configuration.</td></tr>`;
+            resetTotals();
         }
     }
 
@@ -455,35 +480,70 @@
         const tbody = document.getElementById('reportTableBody');
         if (!rowsData || rowsData.length === 0) {
             tbody.innerHTML = `<tr><td colspan="8" class="text-muted p-4">No records found matching date range.</td></tr>`;
+            resetTotals();
             return;
         }
 
         let rowsHTML = "";
+        
+        // Sum accumulators for table footer
+        let sum33341 = 0, sum14256 = 0, sum14225 = 0, sum11111 = 0;
+        let sumRMIS = 0, sumCheque = 0, sumGrandTotal = 0;
+
         rowsData.forEach(row => {
             const dateBs = formatBsDate(row[0]);
-            const vTax   = row[1] || '0';
-            const lic    = row[2] || '0';
-            const route  = row[3] || '0';
-            const incTax = row[4] || '0';
-            const rmis   = row[5] || '0';
-            const cheque = row[6] || '0';
-            const total  = row[7] || '0';
+            
+            // Convert to numbers safely for total sum calculation
+            const num33341 = parseFloat(String(row[1]).replace(/,/g, '')) || 0;
+            const num14256 = parseFloat(String(row[2]).replace(/,/g, '')) || 0;
+            const num14225 = parseFloat(String(row[3]).replace(/,/g, '')) || 0;
+            const num11111 = parseFloat(String(row[4]).replace(/,/g, '')) || 0;
+            const numRMIS   = parseFloat(String(row[5]).replace(/,/g, '')) || 0;
+            const numCheque = parseFloat(String(row[6]).replace(/,/g, '')) || 0;
+            const numTotal  = parseFloat(String(row[7]).replace(/,/g, '')) || 0;
+
+            sum33341 += num33341;
+            sum14256 += num14256;
+            sum14225 += num14225;
+            sum11111 += num11111;
+            sumRMIS   += numRMIS;
+            sumCheque += numCheque;
+            sumGrandTotal += numTotal;
 
             rowsHTML += `
                 <tr>
                     <td class="fw-bold">${dateBs}</td>
-                    <td>${vTax}</td>
-                    <td>${lic}</td>
-                    <td>${route}</td>
-                    <td>${incTax}</td>
-                    <td>${rmis}</td>
-                    <td class="cheque-text">${cheque}</td>
-                    <td class="fw-bold text-success">${total}</td>
+                    <td>${num33341.toLocaleString()}</td>
+                    <td>${num14256.toLocaleString()}</td>
+                    <td>${num14225.toLocaleString()}</td>
+                    <td>${num11111.toLocaleString()}</td>
+                    <td>${numRMIS.toLocaleString()}</td>
+                    <td class="cheque-text">${numCheque.toLocaleString()}</td>
+                    <td class="fw-bold text-success">${numTotal.toLocaleString()}</td>
                 </tr>
             `;
         });
 
         tbody.innerHTML = rowsHTML;
+
+        // Render Grand Totals in Footer
+        document.getElementById('tot33341').innerText = sum33341.toLocaleString();
+        document.getElementById('tot14256').innerText = sum14256.toLocaleString();
+        document.getElementById('tot14225').innerText = sum14225.toLocaleString();
+        document.getElementById('tot11111').innerText = sum11111.toLocaleString();
+        document.getElementById('totRMIS').innerText = sumRMIS.toLocaleString();
+        document.getElementById('totCheque').innerText = sumCheque.toLocaleString();
+        document.getElementById('totGrandTotal').innerText = "Rs. " + sumGrandTotal.toLocaleString();
+    }
+
+    function resetTotals() {
+        document.getElementById('tot33341').innerText = "0";
+        document.getElementById('tot14256').innerText = "0";
+        document.getElementById('tot14225').innerText = "0";
+        document.getElementById('tot11111').innerText = "0";
+        document.getElementById('totRMIS').innerText = "0";
+        document.getElementById('totCheque').innerText = "0";
+        document.getElementById('totGrandTotal').innerText = "Rs. 0";
     }
 
     function filterReportData() {
