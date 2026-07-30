@@ -3,48 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VRS Official - Baglung (Merged & CSV Reader)</title>
+    <title>VRS Official - Date-Wise Accounts</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <script>
-        // PUBLISHED GOOGLE SHEET CSV URL
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQDAUG5ylei5zL0GSyxafXgnE48WwpWBn0Mfn-OQLMBE-tnaC_GeGuuhjbHYz1D83NkOMa0PPFohtUu/pub?gid=0&single=true&output=csv";
-    </script>
+    
+    <!-- PAPAPARSE FOR FAST CSV PARSING -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
     <style>
         :root { 
-            --gov-blue: #1a237e; 
+            --gov-blue: #0d47a1; 
             --gov-red: #d32f2f; 
             --mustard: #ffca28; 
         }
         body { background-color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
-        .gov-header { background: linear-gradient(135deg, var(--gov-blue) 0%, #0d47a1 100%); color: white; padding: 1rem 1.5rem; border-bottom: 5px solid var(--gov-red); box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .gov-header { background: linear-gradient(135deg, #1a237e 0%, var(--gov-blue) 100%); color: white; padding: 1rem 1.5rem; border-bottom: 5px solid var(--gov-red); box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
         .header-logo { height: 65px; width: auto; object-fit: contain; }
 
-        /* Form Controls & Date Styling */
-        .date-container { position: relative; border: 2px solid var(--gov-red); border-radius: 12px; padding: 15px; background: #fff5f5; transition: 0.3s; }
+        .date-container { position: relative; border: 2px solid var(--gov-red); border-radius: 12px; padding: 15px; background: #fff5f5; }
         .badge-required { font-size: 0.7rem; background: var(--gov-red); color: white; padding: 2px 8px; border-radius: 4px; vertical-align: middle; margin-left: 10px; text-transform: uppercase; }
         
         .card { border: none; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.05); }
         .rmis-box { background-color: #f3e5f5; border: 2px dashed #9c27b0; padding: 10px; border-radius: 8px; }
+        .license-box { background-color: #e3f2fd; border: 2px dashed #1976d2; padding: 12px; border-radius: 10px; }
         .cheque-area { background: linear-gradient(to right, #fff9c4, #fffde7); border: 2px solid #fbc02d; padding: 12px; border-radius: 10px; margin-bottom: 15px; }
         
         .status-match { background-color: #2e7d32 !important; color: white !important; border: 2px solid #1b5e20; }
-        .status-mismatch { background-color: #d32f2f !important; color: white !important; border: 2px solid #b71c1c; }
-        
-        .nav-tabs { border-bottom: 2px solid #e2e8f0; }
-        .nav-tabs .nav-link { font-weight: 600; color: #64748b; border: none; padding: 12px 20px; }
-        .nav-tabs .nav-link.active { background-color: transparent; color: var(--gov-blue) !important; border-bottom: 3px solid var(--gov-blue); }
 
-        /* PRINT STYLES */
+        /* Report Table Custom Styling */
+        .report-card { background: #ffffff; border-radius: 12px; }
+        .table-ledger th { font-weight: 700; font-size: 0.88rem; vertical-align: middle; }
+        .total-col-header { background-color: #d0e1fd !important; color: #0d47a1 !important; }
+        .cheque-text { color: #b78103; font-weight: 600; }
+
+        #loginOverlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(13, 71, 161, 0.88); backdrop-filter: blur(8px);
+            z-index: 9999; display: flex; align-items: center; justify-content: center;
+        }
+
         @media print {
             .no-print { display: none !important; }
             .print-only { display: block !important; }
             body { background: white !important; }
             .card { box-shadow: none !important; border: none !important; }
-
-            .voucher-shell { 
-                border: 2px solid #000; padding: 15px 20px; width: 100%; box-sizing: border-box; margin: 0 auto; background: #fff;
-            }
+            .voucher-shell { border: 2px solid #000; padding: 15px 20px; width: 100%; box-sizing: border-box; margin: 0 auto; background: #fff; }
             .v-header-block { display: flex; align-items: center; justify-content: center; gap: 15px; border-bottom: 3px double #000; padding-bottom: 8px; margin-bottom: 12px; }
             .v-logo { height: 75px; width: auto; object-fit: contain; }
             .v-header-titles { text-align: center; }
@@ -56,154 +59,204 @@
             .v-table th { background: #eee !important; -webkit-print-color-adjust: exact; }
             .total-section { border: 2px solid black; padding: 10px; margin-top: 10px; text-align: center; background: #fafafa !important; -webkit-print-color-adjust: exact; }
             .total-amt { font-size: 20pt; font-weight: 900; margin-top: 2px; }
-            .words-area { margin-top: 12px; font-size: 11pt; padding-bottom: 6px; line-height: 1.4; }
-            .audit-line { margin-top: 10px; padding: 6px; text-align: center; font-weight: bold; font-size: 10pt; border: 1.5px solid #000; -webkit-print-color-adjust: exact; }
         }
         @media screen { .print-only { display: none; } }
     </style>
 </head>
 <body>
 
-    <!-- Header Section -->
-    <div class="gov-header d-flex justify-content-between align-items-center px-4 no-print">
-        <div class="d-flex align-items-center gap-3">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg" alt="Emblem" class="header-logo">
-            <div>
-                <h1 class="m-0 h3 fw-bold">गण्डकी प्रदेश सरकार</h1>
-                <h3 class="m-0 h6 mt-1 opacity-90">भौतिक पूर्वाधार विकास तथा यातायात व्यवस्था मन्त्रालय | यातायात व्यवस्था कार्यालय बागलुङ</h3>
+    <!-- LOGIN MODAL -->
+    <div id="loginOverlay">
+        <div class="card p-4 shadow-lg border-0" style="max-width: 400px; width: 90%; border-radius: 20px;">
+            <div class="text-center mb-4">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg" height="70" alt="Emblem" class="mb-2">
+                <h5 class="fw-bold text-primary m-0">VRS Official Login</h5>
+                <small class="text-muted">यातायात व्यवस्था कार्यालय बागलुङ</small>
             </div>
+            <div id="loginError" class="alert alert-danger py-2 small d-none" role="alert">
+                ❌ Invalid Username or Password!
+            </div>
+            <form onsubmit="handleLogin(event)">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">User ID</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                        <input type="text" id="loginUser" class="form-control" placeholder="Enter Username" required>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label small fw-bold">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                        <input type="password" id="loginPass" class="form-control" placeholder="Enter Password" required>
+                    </div>
+                </div>
+                <button type="submit" id="loginBtn" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                    🔒 LOGIN TO ACCESS
+                </button>
+            </form>
         </div>
-        <span class="badge bg-danger px-3 py-2 fw-bold text-uppercase"><i class="bi bi-shield-lock-fill me-1"></i> Admin Panel</span>
     </div>
 
-    <div class="container mt-4">
-        <!-- Navigation Tabs -->
-        <ul class="nav nav-tabs mb-4 no-print" id="appTabs" role="tablist">
-            <li class="nav-item">
-                <button class="nav-link active" id="entry-tab" data-bs-toggle="tab" data-bs-target="#entryView" type="button">📝 Revenue Entry Form</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" id="report-tab" data-bs-toggle="tab" data-bs-target="#reportView" type="button" onclick="fetchReports()">📊 Date-Wise Account Reports</button>
-            </li>
-        </ul>
+    <!-- MAIN APP WRAPPER -->
+    <div id="mainContent" class="d-none">
+        <div class="gov-header d-flex justify-content-between align-items-center px-4 no-print">
+            <div class="d-flex align-items-center gap-3">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg" alt="Emblem" class="header-logo">
+                <div>
+                    <h1 class="m-0 h3 fw-bold">गण्डकी प्रदेश सरकार</h1>
+                    <h3 class="m-0 h6 mt-1 opacity-90">भौतिक पूर्वाधार विकास तथा यातायात व्यवस्था मन्त्रालय | यातायात व्यवस्था कार्यालय बागलुङ</h3>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="text-end text-white">
+                    <div class="fw-bold" id="currentUserDisplay">Admin</div>
+                    <span class="badge bg-danger text-uppercase" id="currentRoleBadge">ADMIN PANEL</span>
+                </div>
+                <button class="btn btn-danger btn-sm fw-bold shadow-sm" onclick="logout()">
+                    <i class="bi bi-power"></i> LOGOUT
+                </button>
+            </div>
+        </div>
 
-        <div class="tab-content">
-            <!-- TAB 1: REVENUE ENTRY FORM WORKSPACE -->
-            <div class="tab-pane fade show active no-print" id="entryView" role="tabpanel">
-                <div class="row g-4">
-                    <!-- Left Column: Revenue Classification -->
-                    <div class="col-lg-7">
-                        <div class="card p-4">
-                            <div class="date-container mb-4" id="dateWrapper">
-                                <label class="fw-bold text-danger h5">Nepali B.S. Date <span class="badge-required">Compulsory</span></label>
-                                <input type="text" id="bsDate" class="form-control form-control-lg border-danger" placeholder="उदाहरण: २०८२-१०-२५" oninput="update()">
-                            </div>
+        <div class="container mt-4">
+            <ul class="nav nav-tabs mb-4 no-print" id="appTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link" id="entry-tab" data-bs-toggle="tab" data-bs-target="#entryView" type="button">📝 Revenue Entry Form</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link active" id="report-tab" data-bs-toggle="tab" data-bs-target="#reportView" type="button" onclick="loadCSVDataDirectly()">📊 Date-Wise Account Reports</button>
+                </li>
+            </ul>
 
-                            <h5 class="fw-bold mb-3 text-secondary">Revenue Classification (Title-Wise)</h5>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="small fw-bold">33341 (सवारी साधन कर)</label>
-                                    <input type="number" id="h33341" class="form-control" value="0" oninput="update()">
+            <div class="tab-content">
+                <!-- TAB 1: ENTRY FORM -->
+                <div class="tab-pane fade no-print" id="entryView" role="tabpanel">
+                    <div class="row g-4">
+                        <div class="col-lg-7">
+                            <div class="card p-4">
+                                <div class="date-container mb-4">
+                                    <label class="fw-bold text-danger h5">Nepali B.S. Date <span class="badge-required">Compulsory</span></label>
+                                    <input type="text" id="bsDate" class="form-control form-control-lg border-danger" placeholder="उदाहरण: २०८३-०४-०१" oninput="update()">
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="small fw-bold">14256 (दर्ता किताब नविकरण / सवारी चालक अनुमतिपत्र)</label>
-                                    <input type="number" id="h14256" class="form-control" value="0" oninput="update()">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="small fw-bold">14225 (रुट पर्मिट)</label>
-                                    <input type="number" id="h14225" class="form-control" value="0" oninput="update()">
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="small fw-bold">11111 (आयकर)</label>
-                                    <input type="number" id="h11111" class="form-control" value="0" oninput="update()">
-                                </div>
-                                <div class="col-md-12">
-                                    <div class="rmis-box">
-                                        <label class="small fw-bold" style="color:#9c27b0">RMIS (Reference Record)</label>
-                                        <input type="number" id="rmis" class="form-control border-purple" value="0" oninput="update()">
+
+                                <h5 class="fw-bold mb-3 text-secondary">Revenue Classification</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="small fw-bold">33341 (सवारी साधन कर)</label>
+                                        <input type="number" id="h33341" class="form-control editor-field" value="0" oninput="update()">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="small fw-bold">14256 (दर्ता किताब नविकरण / चालक अनुमतिपत्र)</label>
+                                        <input type="number" id="h14256" class="form-control editor-field" value="0" oninput="syncFrom14256()">
+                                    </div>
+
+                                    <div class="col-md-12">
+                                        <div class="license-box">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <label class="fw-bold text-primary small">🪪 License Collection Breakdown</label>
+                                                <span class="badge bg-primary text-white">Linked to 14256</span>
+                                            </div>
+                                            <input type="number" id="licenseAmt" class="form-control border-primary editor-field" value="0" placeholder="License Amount" oninput="syncFromLicense()">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="small fw-bold">14225 (रुट पर्मिट)</label>
+                                        <input type="number" id="h14225" class="form-control editor-field" value="0" oninput="update()">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="small fw-bold">11111 (आयकर)</label>
+                                        <input type="number" id="h11111" class="form-control editor-field" value="0" oninput="update()">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="rmis-box">
+                                            <label class="small fw-bold" style="color:#9c27b0">RMIS (Reference Record)</label>
+                                            <input type="number" id="rmis" class="form-control border-purple editor-field" value="0" oninput="update()">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Right Column: Money Audit & Denominations -->
-                    <div class="col-lg-5">
-                        <div class="card p-4 shadow-sm" style="background:#fffde7; border-left: 10px solid var(--mustard);">
-                            <h5 class="fw-bold mb-3">Money Audit (Cash + Cheque)</h5>
-                            
-                            <div class="cheque-area">
-                                <label class="fw-bold text-dark small">Total Cheque Amount</label>
-                                <input type="number" id="chequeAmt" class="form-control border-warning" value="0" oninput="update()">
-                            </div>
+                        <div class="col-lg-5">
+                            <div class="card p-4 shadow-sm" style="background:#fffde7; border-left: 10px solid var(--mustard);">
+                                <h5 class="fw-bold mb-3">Money Audit (Cash + Cheque)</h5>
+                                <div class="cheque-area">
+                                    <label class="fw-bold text-dark small">Total Cheque Amount</label>
+                                    <input type="number" id="chequeAmt" class="form-control border-warning editor-field" value="0" oninput="update()">
+                                </div>
 
-                            <!-- Cash Denominations Container -->
-                            <div id="cashItems"></div>
-                            
-                            <hr>
-                            <div class="d-flex justify-content-between fw-bold h5 mb-0">
-                                <span>Total Money Handled:</span>
-                                <span id="moneySumUI">0</span>
+                                <div id="cashItems"></div>
+                                <hr>
+                                <div class="d-flex justify-content-between fw-bold h5 mb-0">
+                                    <span>Total Money Handled:</span>
+                                    <span id="moneySumUI">0</span>
+                                </div>
+                                
+                                <div id="uiStatus" class="p-3 text-center rounded-3 fw-bold mt-3 shadow-sm status-match">
+                                    ✅ REVENUE BALANCED
+                                </div>
+
+                                <button class="btn btn-primary w-100 py-3 mt-4 fw-bold" onclick="validateAndPrint()">
+                                    🖨️ GENERATE & PRINT VOUCHER
+                                </button>
                             </div>
-                            
-                            <div id="uiStatus" class="p-3 text-center rounded-3 fw-bold mt-3 shadow-sm status-match">
-                                ✅ REVENUE BALANCED
-                            </div>
-                            
-                            <button id="saveBtn" class="btn btn-success w-100 py-2 mt-4 fw-bold shadow-sm" onclick="alert('Data saved locally.')">
-                                📁 SAVE DATA TO GOOGLE SHEET
-                            </button>
-                            <button class="btn btn-primary w-100 py-3 mt-2 fw-bold shadow-lg" onclick="validateAndPrint()">
-                                🖨️ GENERATE & PRINT VOUCHER
-                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- TAB 2: DATE-WISE ACCOUNT REPORT -->
-            <div class="tab-pane fade" id="reportView" role="tabpanel">
-                <div class="card p-4">
-                    <div class="row align-items-center g-3 mb-4 no-print">
-                        <div class="col-xl-3 col-md-12">
+                <!-- TAB 2: REPORTS VIEW (MATCHES SCREENSHOT) -->
+                <div class="tab-pane fade show active" id="reportView" role="tabpanel">
+                    <div class="card report-card p-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 no-print">
                             <h4 class="fw-bold text-secondary m-0">Date-Wise Ledger Entries</h4>
-                        </div>
-                        <div class="col-xl-6 col-md-9">
-                            <div class="input-group">
-                                <span class="input-group-text bg-light fw-bold small text-muted">From (B.S.)</span>
-                                <input type="text" id="dateFrom" class="form-control" placeholder="२०८३-०४-०१">
-                                <span class="input-group-text bg-light fw-bold small text-muted">To (B.S.)</span>
-                                <input type="text" id="dateTo" class="form-control" placeholder="२०८३-०४-३०">
-                                <button class="btn btn-primary fw-bold px-3" onclick="filterReportsByRange()">🔍 Filter</button>
+                            
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <!-- Filter Inputs -->
+                                <div class="input-group input-group-sm" style="max-width: 440px;">
+                                    <span class="input-group-text bg-light fw-bold text-secondary">From (B.S.)</span>
+                                    <input type="text" id="fromDate" class="form-control text-center fw-bold" value="२०८३-०४-०१">
+                                    <span class="input-group-text bg-light fw-bold text-secondary">To (B.S.)</span>
+                                    <input type="text" id="toDate" class="form-control text-center fw-bold" value="२०८३-०४-३०">
+                                    <button class="btn btn-primary fw-bold" onclick="filterReportData()">
+                                        <i class="bi bi-search"></i> Filter
+                                    </button>
+                                </div>
+
+                                <!-- Actions -->
+                                <button class="btn btn-outline-secondary btn-sm fw-bold px-3" onclick="clearDateFilter()">Clear</button>
+                                <button class="btn btn-outline-primary btn-sm fw-bold px-3" onclick="loadCSVDataDirectly()">
+                                    <i class="bi bi-arrow-repeat"></i> Sync CSV
+                                </button>
+                                <button class="btn btn-dark btn-sm fw-bold px-3" onclick="window.print()">
+                                    <i class="bi bi-printer-fill"></i> Print Ledger
+                                </button>
                             </div>
                         </div>
-                        <div class="col-xl-3 col-md-3 d-flex gap-2 justify-content-md-end">
-                            <button class="btn btn-outline-secondary small fw-bold" onclick="clearDateFilter()">Clear</button>
-                            <button class="btn btn-outline-primary fw-bold" onclick="fetchReports()">🔄 Sync CSV</button>
-                            <button class="btn btn-dark fw-bold px-3" onclick="window.print()">🖨️ Print Ledger</button>
+
+                        <!-- Data Table -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle text-center small mb-0 table-ledger">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th width="14%">Date (B.S.)</th>
+                                        <th width="12%">33341<br><span class="fw-normal">Vehicle Tax</span></th>
+                                        <th width="15%">14256<br><span class="fw-normal">Renewals / License</span></th>
+                                        <th width="13%">14225<br><span class="fw-normal">Route Permit</span></th>
+                                        <th width="13%">11111<br><span class="fw-normal">Income Tax</span></th>
+                                        <th width="10%">RMIS</th>
+                                        <th width="10%" style="color: #ffca28;">Cheque</th>
+                                        <th width="13%" class="total-col-header">Total Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportTableBody">
+                                    <tr>
+                                        <td colspan="8" class="text-muted p-4">Loading report data...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                    
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped table-hover align-middle text-center small">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Date (B.S.)</th>
-                                    <th>33341<br>Vehicle Tax</th>
-                                    <th>14256<br>Renewals / License</th>
-                                    <th>14225<br>Route Permit</th>
-                                    <th>11111<br>Income Tax</th>
-                                    <th>RMIS</th>
-                                    <th>Cheque</th>
-                                    <th class="table-primary text-dark">Total Revenue</th>
-                                </tr>
-                            </thead>
-                            <tbody id="reportTableBody">
-                                <tr>
-                                    <td colspan="8" class="text-muted p-4">Click "Sync CSV" or refresh page to fetch worksheet data...</td>
-                                </tr>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
@@ -214,7 +267,7 @@
     <div class="print-only">
         <div class="voucher-shell">
             <div class="v-header-block">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg" alt="Nepal Emblem Logo" class="v-logo">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg" class="v-logo" alt="Logo">
                 <div class="v-header-titles">
                     <h2>गण्डकी प्रदेश सरकार</h2>
                     <p>भौतिक पूर्वाधार विकास तथा यातायात व्यवस्था मन्त्रालय</p>
@@ -222,47 +275,198 @@
                     <p style="font-size: 10pt; text-decoration: underline; margin-top:2px;">दैनिक राजस्व संकलन भौचर (Daily Revenue Collection Voucher)</p>
                 </div>
             </div>
-
             <div class="date-strip">मिति (B.S.): <span id="pDate"></span></div>
-
             <table class="v-table">
                 <thead>
                     <tr>
                         <th width="18%">राजस्व शीर्षक</th>
-                        <th width="52%">विवरण (Revenue Title Classification)</th>
+                        <th width="52%">विवरण (Revenue Title)</th>
                         <th width="30%" style="text-align: right;">रकम (Rs.)</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr><td>33341</td><td>सवारी साधन कर (Vehicle Tax)</td><td style="text-align: right;" id="p33341">0</td></tr>
-                    <tr><td>14256</td><td>दर्ता किताब नविकरण तथा सवारी चालक अनुमतिपत्र (Renewals & License)</td><td style="text-align: right;" id="p14256">0</td></tr>
-                    <tr><td>14225</td><td>सवारी इजाजतपत्र दस्तुर / रुट पर्मिट (Route Permit)</td><td style="text-align: right;" id="p14225">0</td></tr>
+                    <tr><td>14256</td><td>दर्ता किताब नविकरण तथा सवारी चालक अनुमतिपत्र</td><td style="text-align: right;" id="p14256">0</td></tr>
+                    <tr><td>14225</td><td>सवारी इजाजतपत्र दस्तुर / रुट पर्मिट</td><td style="text-align: right;" id="p14225">0</td></tr>
                     <tr><td>11111</td><td>आयकर (Income Tax)</td><td style="text-align: right;" id="p11111">0</td></tr>
-                    <tr style="background:#f9f9f9"><td>RMIS</td><td>RMIS Reference Record (Non-Adding)</td><td style="text-align: right;" id="pRMIS">0</td></tr>
+                    <tr style="background:#f9f9f9"><td>RMIS</td><td>RMIS Reference Record</td><td style="text-align: right;" id="pRMIS">0</td></tr>
                 </tbody>
             </table>
-
             <div class="total-section">
-                <div style="font-size: 12pt; font-weight: bold; letter-spacing: 0.5px;">जम्मा संकलित राजस्व (TOTAL REVENUE COLLECTION)</div>
+                <div>जम्मा संकलित राजस्व (TOTAL REVENUE)</div>
                 <div class="total-amt">Rs. <span id="pTotal">0</span> /-</div>
-                <div id="pAuditStatus" class="audit-line"></div>
-            </div>
-
-            <div class="words-area">
-                <strong>अक्षरेपी (Amount in Words):</strong> रू. <span id="pWords">Zero</span> मात्र।
             </div>
         </div>
     </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    let allReportsCache = [];
+    // CSV URL
+    const PUBLISHED_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQDAUG5ylei5zL0GSyxafXgnE48WwpWBn0Mfn-OQLMBE-tnaC_GeGuuhjbHYz1D83NkOMa0PPFohtUu/pub?gid=0&single=true&output=csv";
 
-    // Initialize Cash Denomination Input Fields
-    window.addEventListener('DOMContentLoaded', () => {
+    let currentUser = null;
+    let allReportRows = [];
+
+    // Parse CSV
+    function fetchParsedCSV() {
+        return new Promise((resolve, reject) => {
+            Papa.parse(PUBLISHED_CSV_URL, {
+                download: true,
+                skipEmptyLines: true,
+                complete: (results) => resolve(results.data),
+                error: (err) => reject(err)
+            });
+        });
+    }
+
+    async function handleLogin(e) {
+        e.preventDefault();
+        const btn = document.getElementById('loginBtn');
+        btn.innerText = "⚡ Fetching CSV Data...";
+        btn.disabled = true;
+
+        const user = document.getElementById('loginUser').value.trim();
+        const pass = document.getElementById('loginPass').value.trim();
+        const errDiv = document.getElementById('loginError');
+
+        try {
+            const rows = await fetchParsedCSV();
+            let matched = false;
+
+            for (let i = 1; i < rows.length; i++) {
+                const rowUser = rows[i][0] ? String(rows[i][0]).trim() : "";
+                const rowPass = rows[i][1] ? String(rows[i][1]).trim() : "";
+                const rowRole = rows[i][2] ? String(rows[i][2]).trim() : "user";
+
+                if (rowUser === user && rowPass === pass) {
+                    matched = true;
+                    currentUser = { username: rowUser, role: rowRole };
+                    break;
+                }
+            }
+
+            if (matched) {
+                sessionStorage.setItem("vrs_session", JSON.stringify(currentUser));
+                applyPermissions();
+            } else {
+                errDiv.classList.remove('d-none');
+            }
+        } catch (err) {
+            console.error("CSV Error:", err);
+            alert("Unable to fetch CSV data link!");
+        } finally {
+            btn.innerText = "🔒 LOGIN TO ACCESS";
+            btn.disabled = false;
+        }
+    }
+
+    async function loadCSVDataDirectly() {
+        const tbody = document.getElementById('reportTableBody');
+        tbody.innerHTML = `<tr><td colspan="8" class="text-primary fw-bold p-4">⚡ Syncing live CSV data...</td></tr>`;
+
+        try {
+            const rows = await fetchParsedCSV();
+            if (!rows || rows.length <= 1) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-muted p-4">No data available in CSV.</td></tr>`;
+                return;
+            }
+
+            // Exclude header row from display array
+            allReportRows = rows.slice(1);
+            filterReportData();
+
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-danger p-4">Failed to load CSV ledger data.</td></tr>`;
+        }
+    }
+
+    function renderReportTable(rowsData) {
+        const tbody = document.getElementById('reportTableBody');
+        if (!rowsData || rowsData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-muted p-4">No records found matching date range.</td></tr>`;
+            return;
+        }
+
+        let rowsHTML = "";
+        rowsData.forEach(row => {
+            const dateBs = row[0] || '-';
+            const vTax   = row[1] || '0';
+            const lic    = row[2] || '0';
+            const route  = row[3] || '0';
+            const incTax = row[4] || '0';
+            const rmis   = row[5] || '0';
+            const cheque = row[6] || '0';
+            const total  = row[7] || '0';
+
+            rowsHTML += `
+                <tr>
+                    <td class="fw-bold">${dateBs}</td>
+                    <td>${vTax}</td>
+                    <td>${lic}</td>
+                    <td>${route}</td>
+                    <td>${incTax}</td>
+                    <td>${rmis}</td>
+                    <td class="cheque-text">${cheque}</td>
+                    <td class="fw-bold text-success">${total}</td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = rowsHTML;
+    }
+
+    function filterReportData() {
+        const fromVal = document.getElementById('fromDate').value.trim();
+        const toVal   = document.getElementById('toDate').value.trim();
+
+        if (!fromVal && !toVal) {
+            renderReportTable(allReportRows);
+            return;
+        }
+
+        const filtered = allReportRows.filter(row => {
+            const rowDate = row[0] ? String(row[0]).trim() : '';
+            if (!rowDate) return false;
+
+            let pass = true;
+            if (fromVal) pass = pass && (rowDate >= fromVal);
+            if (toVal)   pass = pass && (rowDate <= toVal);
+            return pass;
+        });
+
+        renderReportTable(filtered);
+    }
+
+    function clearDateFilter() {
+        document.getElementById('fromDate').value = '';
+        document.getElementById('toDate').value = '';
+        renderReportTable(allReportRows);
+    }
+
+    function applyPermissions() {
+        document.getElementById('loginOverlay').classList.add('d-none');
+        document.getElementById('mainContent').classList.remove('d-none');
+        document.getElementById('currentUserDisplay').innerText = currentUser.username;
+
         initializeDenominations();
         update();
-    });
+        loadCSVDataDirectly();
+    }
+
+    function logout() {
+        sessionStorage.removeItem("vrs_session");
+        location.reload();
+    }
+
+    function syncFromLicense() {
+        document.getElementById('h14256').value = document.getElementById('licenseAmt').value;
+        update();
+    }
+
+    function syncFrom14256() {
+        document.getElementById('licenseAmt').value = document.getElementById('h14256').value;
+        update();
+    }
 
     function initializeDenominations() {
         const denoms = [1000, 500, 100, 50, 20, 10, 5, 2, 1];
@@ -273,35 +477,13 @@
             container.innerHTML += `
                 <div class="row mb-1 g-1 align-items-center">
                     <div class="col-4 small fw-bold text-muted">Rs. ${d}</div>
-                    <div class="col-8"><input type="number" class="form-control form-control-sm c-in" data-val="${d}" value="0" oninput="update()"></div>
+                    <div class="col-8"><input type="number" class="form-control form-control-sm c-in editor-field" data-val="${d}" value="0" oninput="update()"></div>
                 </div>`;
         });
     }
 
-    function numberToWords(num) {
-        if (num === 0) return 'Zero';
-        const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
-        const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-        const format = (n, s) => {
-            let str = "";
-            if (n > 19) str += b[Math.floor(n / 10)] + " " + a[n % 10];
-            else str += a[n];
-            if (n !== 0) str += s;
-            return str;
-        };
-        let words = "";
-        words += format(Math.floor(num / 10000000), "Crore ");
-        words += format(Math.floor((num / 100000) % 100), "Lakh ");
-        words += format(Math.floor((num / 1000) % 100), "Thousand ");
-        words += format(Math.floor((num / 100) % 10), "Hundred ");
-        if (num > 100 && num % 100 !== 0) words += "and ";
-        words += format(num % 100, "");
-        return words.trim();
-    }
-
     function update() {
         if (!document.getElementById('bsDate')) return;
-
         const bs = document.getElementById('bsDate').value;
         const v1 = parseFloat(document.getElementById('h33341').value) || 0;
         const v2 = parseFloat(document.getElementById('h14256').value) || 0;
@@ -318,28 +500,6 @@
         });
         const totalMoneyHandled = cashOnly + chq;
 
-        const gap = totalMoneyHandled - totalRev;
-        const uiStatus = document.getElementById('uiStatus');
-        const pStatus = document.getElementById('pAuditStatus');
-
-        if (gap === 0) {
-            uiStatus.innerText = "✅ REVENUE BALANCED";
-            uiStatus.className = "p-3 text-center rounded-3 fw-bold mt-3 shadow-sm status-match";
-            if(pStatus) {
-                pStatus.innerText = "AUDIT STATUS: BALANCED (CASH & CHEQUE MATCHED)";
-                pStatus.style.backgroundColor = "#e8f5e9";
-                pStatus.style.color = "#2e7d32";
-            }
-        } else {
-            uiStatus.innerText = "⚠️ MISMATCHED: Rs. " + gap.toLocaleString();
-            uiStatus.className = "p-3 text-center rounded-3 fw-bold mt-3 shadow-sm status-mismatch";
-            if(pStatus) {
-                pStatus.innerText = "⚠️ AUDIT MISMATCH: Rs. " + gap.toLocaleString() + " DIFFERENCE";
-                pStatus.style.backgroundColor = "#ffebee";
-                pStatus.style.color = "#d32f2f";
-            }
-        }
-
         document.getElementById('pDate').innerText = bs || "________________";
         document.getElementById('p33341').innerText = v1.toLocaleString();
         document.getElementById('p14256').innerText = v2.toLocaleString();
@@ -347,106 +507,20 @@
         document.getElementById('p11111').innerText = v4.toLocaleString();
         document.getElementById('pRMIS').innerText = rm.toLocaleString();
         document.getElementById('pTotal').innerText = totalRev.toLocaleString();
-        document.getElementById('pWords').innerText = numberToWords(totalRev);
         document.getElementById('moneySumUI').innerText = totalMoneyHandled.toLocaleString();
     }
 
-    async function fetchReports() {
-        const tbody = document.getElementById('reportTableBody');
-        tbody.innerHTML = `<tr><td colspan="8" class="text-primary fw-bold p-4">⏳ Fetching live CSV data from Google Sheets...</td></tr>`;
-
-        try {
-            const cacheBusterUrl = CSV_URL + (CSV_URL.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
-            const response = await fetch(cacheBusterUrl);
-            if (!response.ok) throw new Error("Could not fetch CSV document.");
-            
-            const csvText = await response.text();
-            allReportsCache = parseCSV(csvText);
-            renderTable(allReportsCache);
-        } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-danger p-4">❌ Failed to load CSV data: ${err.message}.</td></tr>`;
+    window.addEventListener('DOMContentLoaded', () => {
+        const session = sessionStorage.getItem("vrs_session");
+        if (session) {
+            currentUser = JSON.parse(session);
+            applyPermissions();
         }
-    }
-
-    function parseCSV(text) {
-        const lines = text.trim().split(/\r?\n/);
-        if (lines.length <= 1) return [];
-
-        const reports = [];
-        for (let i = 1; i < lines.length; i++) {
-            if (!lines[i].trim()) continue;
-            const cols = lines[i].split(',').map(c => c.replace(/^"|"$/g, '').trim());
-            if (cols.length < 8) continue;
-
-            let rawDate = cols[0] || '';
-            if (rawDate.includes('T')) rawDate = rawDate.split('T')[0];
-
-            reports.push({
-                bsDate: rawDate,
-                h33341: parseFloat(cols[1]) || 0,
-                h14256: parseFloat(cols[2]) || 0,
-                h14225: parseFloat(cols[3]) || 0,
-                h11111: parseFloat(cols[4]) || 0,
-                rmis: parseFloat(cols[5]) || 0,
-                chequeAmt: parseFloat(cols[6]) || 0,
-                totalRev: parseFloat(cols[7]) || 0
-            });
-        }
-        return reports.reverse();
-    }
-
-    function renderTable(dataset) {
-        const tbody = document.getElementById('reportTableBody');
-        if (!tbody) return;
-
-        if (dataset.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-muted p-4">No report logs found.</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = dataset.map(row => `
-            <tr>
-                <td class="fw-bold text-dark">${row.bsDate}</td>
-                <td>${row.h33341.toLocaleString()}</td>
-                <td>${row.h14256.toLocaleString()}</td>
-                <td>${row.h14225.toLocaleString()}</td>
-                <td>${row.h11111.toLocaleString()}</td>
-                <td class="text-purple">${row.rmis.toLocaleString()}</td>
-                <td class="text-warning bg-light">${row.chequeAmt.toLocaleString()}</td>
-                <td class="fw-bold bg-light text-success">${row.totalRev.toLocaleString()}</td>
-            </tr>
-        `).join('');
-    }
-
-    function filterReportsByRange() {
-        const fromDate = document.getElementById('dateFrom').value.trim();
-        const toDate = document.getElementById('dateTo').value.trim();
-        if (!fromDate && !toDate) { alert("⚠️ Enter at least one date range to filter."); return; }
-        
-        const filtered = allReportsCache.filter(item => {
-            let itemDate = String(item.bsDate || '').trim();
-            if (itemDate.includes('T')) itemDate = itemDate.split('T')[0];
-
-            let matchFrom = true; 
-            let matchTo = true;
-            if (fromDate) matchFrom = (itemDate >= fromDate);
-            if (toDate) matchTo = (itemDate <= toDate);
-            return matchFrom && matchTo;
-        });
-        renderTable(filtered);
-    }
-    
-    function clearDateFilter() {
-        document.getElementById('dateFrom').value = "";
-        document.getElementById('dateTo').value = "";
-        renderTable(allReportsCache);
-    }
+    });
 
     function validateAndPrint() {
-        const dateInput = document.getElementById('bsDate');
-        if (!dateInput || !dateInput.value.trim()) {
-            alert("🛑 COMPULSORY ERROR: Enter the Nepali B.S. Date before printing.");
-            if(dateInput) dateInput.focus();
+        if (!document.getElementById('bsDate').value.trim()) {
+            alert("🛑 Enter Nepali B.S. Date before printing.");
             return;
         }
         window.print();
