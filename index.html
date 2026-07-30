@@ -24,6 +24,7 @@
         .card { border: none; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.05); }
         .rmis-box { background-color: #f3e5f5; border: 2px dashed #9c27b0; padding: 10px; border-radius: 8px; }
         .license-box { background-color: #e3f2fd; border: 2px dashed #1976d2; padding: 12px; border-radius: 10px; }
+        .total-box { background-color: #e8f5e9; border: 2px solid #2e7d32; padding: 12px; border-radius: 10px; }
         .cheque-area { background: linear-gradient(to right, #fff9c4, #fffde7); border: 2px solid #fbc02d; padding: 12px; border-radius: 10px; margin-bottom: 15px; }
         
         .rev-total-box { background: linear-gradient(135deg, #0d47a1, #1e88e5); color: white; border-radius: 12px; padding: 15px; margin-top: 20px; }
@@ -190,7 +191,7 @@
                                         <th width="13%">11111<br><span class="fw-normal">Income Tax</span></th>
                                         <th width="10%">RMIS</th>
                                         <th width="10%" style="color: #ffca28;">Cheque</th>
-                                        <th width="13%" class="total-col-header">Total Revenue</th>
+                                        <th width="13%" class="total-col-header">Total Revenue Entry</th>
                                     </tr>
                                 </thead>
                                 <tbody id="reportTableBody">
@@ -261,12 +262,23 @@
                                             <input type="number" id="rmis" class="form-control border-purple editor-field" value="0" oninput="update()">
                                         </div>
                                     </div>
+
+                                    <!-- TOTAL AMOUNT INPUT FIELD -->
+                                    <div class="col-md-12">
+                                        <div class="total-box">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <label class="fw-bold text-success small">💵 Total Revenue Amount (Entry Total Column)</label>
+                                                <span class="badge bg-success text-white">Manual / Auto Override</span>
+                                            </div>
+                                            <input type="number" id="customTotalAmt" class="form-control border-success editor-field fw-bold" value="0" placeholder="Total Entry Amount" oninput="manualTotalUpdate()">
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- TOTAL REVENUE CLASSIFICATION SUMMARY DISPLAY -->
                                 <div class="rev-total-box shadow-sm d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="m-0 fw-bold">Total Revenue Classification:</h6>
+                                        <h6 class="m-0 fw-bold">Auto-Calculated Revenue Total:</h6>
                                         <small class="opacity-75">(33341 + 14256 + 14225 + 11111)</small>
                                     </div>
                                     <div class="h3 fw-bold m-0">
@@ -352,6 +364,7 @@
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzrANEjCdtqf-iYV9xG2upfdmQpHP89gCExhHfQ2hOxSe1T0pww_6r2tU5yLAS3OTsD/exec";
 
     let allReportRows = [];
+    let isManualTotalEdited = false;
 
     const AUTH_USER = "admin";
     const AUTH_PASS = "R522051";
@@ -445,6 +458,7 @@
         const v2 = parseFloat(document.getElementById('h14256').value) || 0;
         const v3 = parseFloat(document.getElementById('h14225').value) || 0;
         const v4 = parseFloat(document.getElementById('h11111').value) || 0;
+        const finalTotal = parseFloat(document.getElementById('customTotalAmt').value) || (v1 + v2 + v3 + v4);
 
         const payload = {
             date: formattedDate,
@@ -454,7 +468,7 @@
             v11111: v4,
             rmis: parseFloat(document.getElementById('rmis').value) || 0,
             cheque: parseFloat(document.getElementById('chequeAmt').value) || 0,
-            total: (v1 + v2 + v3 + v4)
+            total: finalTotal
         };
 
         try {
@@ -466,6 +480,7 @@
             });
 
             alert("✅ Entry saved successfully!");
+            isManualTotalEdited = false;
             loadSheetData(); // Refresh table view automatically
         } catch (error) {
             console.error("Error saving data:", error);
@@ -519,7 +534,7 @@
                     <td>${num11111.toLocaleString()}</td>
                     <td>${numRMIS.toLocaleString()}</td>
                     <td class="cheque-text">${numCheque.toLocaleString()}</td>
-                    <td class="fw-bold text-success">${numTotal.toLocaleString()}</td>
+                    <td class="fw-bold text-primary">${numTotal.toLocaleString()}</td>
                 </tr>
             `;
         });
@@ -584,6 +599,11 @@
         update();
     }
 
+    function manualTotalUpdate() {
+        isManualTotalEdited = true;
+        update();
+    }
+
     function initializeDenominations() {
         const denoms = [1000, 500, 100, 50, 20, 10, 5, 2, 1];
         const container = document.getElementById('cashItems');
@@ -598,7 +618,6 @@
         });
     }
 
-    // Synchronizes Revenue Classification Total and connects with Money Audit
     function update() {
         if (!document.getElementById('bsDate')) return;
         const bs = document.getElementById('bsDate').value;
@@ -609,8 +628,15 @@
         const rm = parseFloat(document.getElementById('rmis').value) || 0;
         const chq = parseFloat(document.getElementById('chequeAmt').value) || 0;
 
-        // Total Revenue Classification
-        const totalRevenueClassification = v1 + v2 + v3 + v4;
+        // Calculated Total from Revenue Classification
+        const autoRevenueTotal = v1 + v2 + v3 + v4;
+
+        // Auto sync total box if user hasn't typed manually
+        if (!isManualTotalEdited) {
+            document.getElementById('customTotalAmt').value = autoRevenueTotal;
+        }
+
+        const effectiveTotal = parseFloat(document.getElementById('customTotalAmt').value) || autoRevenueTotal;
 
         // Money Audit Calculation (Cash + Cheque)
         let cashOnly = 0;
@@ -619,8 +645,8 @@
         });
         const totalMoneyHandled = cashOnly + chq;
 
-        // Update displays
-        document.getElementById('revClassificationTotalDisplay').innerText = totalRevenueClassification.toLocaleString();
+        // Update UI displays
+        document.getElementById('revClassificationTotalDisplay').innerText = autoRevenueTotal.toLocaleString();
         document.getElementById('moneySumUI').innerText = totalMoneyHandled.toLocaleString();
 
         // Print preview values
@@ -630,18 +656,18 @@
         document.getElementById('p14225').innerText = v3.toLocaleString();
         document.getElementById('p11111').innerText = v4.toLocaleString();
         document.getElementById('pRMIS').innerText = rm.toLocaleString();
-        document.getElementById('pTotal').innerText = totalRevenueClassification.toLocaleString();
+        document.getElementById('pTotal').innerText = effectiveTotal.toLocaleString();
 
-        // Compare Revenue Classification vs Money Handled
+        // Compare Total Money vs Effective Entry Total
         const statusBox = document.getElementById('uiStatus');
         const saveBtn = document.getElementById('saveBtn');
 
-        if (totalRevenueClassification === totalMoneyHandled) {
+        if (effectiveTotal === totalMoneyHandled) {
             statusBox.className = "p-3 text-center rounded-3 fw-bold mt-3 shadow-sm status-match";
             statusBox.innerHTML = "✅ REVENUE BALANCED";
             saveBtn.disabled = false;
         } else {
-            const diff = Math.abs(totalRevenueClassification - totalMoneyHandled);
+            const diff = Math.abs(effectiveTotal - totalMoneyHandled);
             statusBox.className = "p-3 text-center rounded-3 fw-bold mt-3 shadow-sm status-mismatch";
             statusBox.innerHTML = `⚠️ UNBALANCED (Diff: Rs. ${diff.toLocaleString()})`;
             saveBtn.disabled = true;
