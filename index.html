@@ -76,9 +76,7 @@
         }
 
         /* Inputs & Tables */
-        .form-control-sm {
-            border-color: #cbd5e1;
-        }
+        .form-control-sm { border-color: #cbd5e1; }
         .form-control:focus {
             border-color: var(--gov-blue);
             box-shadow: 0 0 0 0.2rem rgba(15, 56, 96, 0.15);
@@ -88,6 +86,10 @@
             color: #334155;
             font-weight: 600;
             font-size: 0.85rem;
+        }
+        .total-row {
+            background-color: #e2e8f0 !important;
+            font-weight: bold;
         }
 
         /* Print formatting */
@@ -165,10 +167,11 @@
                                     <th>33341</th>
                                     <th>14256</th>
                                     <th>14225</th>
-                                    <th class="table-primary">Ledger Total</th>
+                                    <th class="table-primary">Ledger Total (End of Row)</th>
                                 </tr>
                             </thead>
                             <tbody id="reportTableBody"></tbody>
+                            <tfoot id="reportTableFoot"></tfoot>
                         </table>
                     </div>
                 </div>
@@ -248,7 +251,7 @@
                             </div>
 
                             <div class="p-2 mb-3 rounded d-flex justify-content-between align-items-center" style="background-color: var(--gov-light-blue); border: 1px solid #bfdbfe;">
-                                <span class="fw-bold small text-primary">Main Ledger Subtotal:</span>
+                                <span class="fw-bold small text-primary">Main Ledger Subtotal (Row Total):</span>
                                 <span class="fw-bold text-primary">Rs. <span id="mainHeadsSubtotalDisplay">0</span></span>
                             </div>
 
@@ -392,28 +395,58 @@
             
             // Render Main Ledger
             let lHtml = "";
-            (data.ledger || []).slice(1).forEach(r => {
-                lHtml += `<tr>
-                    <td>${r[0] || ''}</td>
-                    <td>${r[1] || 0}</td>
-                    <td>${r[2] || 0}</td>
-                    <td>${r[3] || 0}</td>
-                    <td class="fw-bold text-primary">${r[4] || 0}</td>
-                </tr>`;
+            let lFootHtml = "";
+            let ledgerRows = (data.ledger || []).slice(1);
+
+            let sum33341 = 0, sum14256 = 0, sum14225 = 0, sumTotal = 0;
+
+            ledgerRows.forEach(r => {
+                let isTotalRow = (r[0] || '').toString().includes("Total") || (r[0] || '').toString().includes("जम्मा");
+
+                if (!isTotalRow) {
+                    let v1 = Number(r[1]) || 0;
+                    let v2 = Number(r[2]) || 0;
+                    let v3 = Number(r[3]) || 0;
+                    let rTotal = Number(r[4]) || (v1 + v2 + v3);
+
+                    sum33341 += v1;
+                    sum14256 += v2;
+                    sum14225 += v3;
+                    sumTotal += rTotal;
+
+                    lHtml += `<tr>
+                        <td>${r[0] || ''}</td>
+                        <td>${v1.toLocaleString()}</td>
+                        <td>${v2.toLocaleString()}</td>
+                        <td>${v3.toLocaleString()}</td>
+                        <td class="fw-bold text-primary">${rTotal.toLocaleString()}</td>
+                    </tr>`;
+                }
             });
+
+            // Column totals at bottom
+            lFootHtml = `<tr class="total-row border-top border-2 border-dark">
+                <td>Total (जम्मा)</td>
+                <td>${sum33341.toLocaleString()}</td>
+                <td>${sum14256.toLocaleString()}</td>
+                <td>${sum14225.toLocaleString()}</td>
+                <td class="text-primary">${sumTotal.toLocaleString()}</td>
+            </tr>`;
+
             document.getElementById('reportTableBody').innerHTML = lHtml || `<tr><td colspan="5" class="text-muted p-3">कुनै विवरण फेला परेन</td></tr>`;
+            document.getElementById('reportTableFoot').innerHTML = lFootHtml;
 
             // Render Aayakar 11111
             let aHtml = "";
             (data.aayakar11111 || []).slice(1).forEach(r => {
-                aHtml += `<tr><td>${r[0] || ''}</td><td class="fw-bold text-primary">${r[1] || 0}</td><td>${r[2] || ''}</td></tr>`;
+                aHtml += `<tr><td>${r[0] || ''}</td><td class="fw-bold text-primary">${(Number(r[1])||0).toLocaleString()}</td><td>${r[2] || ''}</td></tr>`;
             });
             document.getElementById('aayakarTableBody').innerHTML = aHtml || `<tr><td colspan="3" class="text-muted p-3">कुनै विवरण फेला परेन</td></tr>`;
 
             // Render RMIS
             let rHtml = "";
             (data.rmis || []).slice(1).forEach(r => {
-                rHtml += `<tr><td>${r[0] || ''}</td><td class="fw-bold text-primary">${r[1] || 0}</td><td>${r[2] || ''}</td></tr>`;
+                rHtml += `<tr><td>${r[0] || ''}</td><td class="fw-bold text-primary">${(Number(r[1])||0).toLocaleString()}</td><td>${r[2] || ''}</td></tr>`;
             });
             document.getElementById('rmisTableBody').innerHTML = rHtml || `<tr><td colspan="3" class="text-muted p-3">कुनै विवरण फेला परेन</td></tr>`;
 
@@ -440,7 +473,7 @@
         const vRims = parseFloat(document.getElementById('hRims').value) || 0;
         const chq = parseFloat(document.getElementById('chequeAmt').value) || 0;
 
-        const mainSubtotal = v1 + v2 + v3;
+        const mainSubtotal = v1 + v2 + v3; // End of row sum
         const grandTotal = mainSubtotal + v4 + vRims;
 
         document.getElementById('mainHeadsSubtotalDisplay').innerText = mainSubtotal.toLocaleString();
