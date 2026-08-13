@@ -194,6 +194,7 @@
                                 </tr>
                             </thead>
                             <tbody id="aayakarTableBody"></tbody>
+                            <tfoot id="aayakarTableFoot"></tfoot>
                         </table>
                     </div>
                 </div>
@@ -216,6 +217,7 @@
                                 </tr>
                             </thead>
                             <tbody id="rmisTableBody"></tbody>
+                            <tfoot id="rmisTableFoot"></tfoot>
                         </table>
                     </div>
                 </div>
@@ -393,16 +395,14 @@
             const res = await fetch(APPS_SCRIPT_URL);
             const data = await res.json();
             
-            // Render Main Ledger
+            // 1. Render Main Ledger Table
             let lHtml = "";
             let lFootHtml = "";
             let ledgerRows = (data.ledger || []).slice(1);
-
             let sum33341 = 0, sum14256 = 0, sum14225 = 0, sumTotal = 0;
 
             ledgerRows.forEach(r => {
                 let isTotalRow = (r[0] || '').toString().includes("Total") || (r[0] || '').toString().includes("जम्मा");
-
                 if (!isTotalRow) {
                     let v1 = Number(r[1]) || 0;
                     let v2 = Number(r[2]) || 0;
@@ -424,7 +424,6 @@
                 }
             });
 
-            // Column totals at bottom
             lFootHtml = `<tr class="total-row border-top border-2 border-dark">
                 <td>Total (जम्मा)</td>
                 <td>${sum33341.toLocaleString()}</td>
@@ -436,19 +435,63 @@
             document.getElementById('reportTableBody').innerHTML = lHtml || `<tr><td colspan="5" class="text-muted p-3">कुनै विवरण फेला परेन</td></tr>`;
             document.getElementById('reportTableFoot').innerHTML = lFootHtml;
 
-            // Render Aayakar 11111
+            // 2. Render Aayakar 11111 Table
             let aHtml = "";
-            (data.aayakar11111 || []).slice(1).forEach(r => {
-                aHtml += `<tr><td>${r[0] || ''}</td><td class="fw-bold text-primary">${(Number(r[1])||0).toLocaleString()}</td><td>${r[2] || ''}</td></tr>`;
-            });
-            document.getElementById('aayakarTableBody').innerHTML = aHtml || `<tr><td colspan="3" class="text-muted p-3">कुनै विवरण फेला परेन</td></tr>`;
+            let aFootHtml = "";
+            let aayakarRows = (data.aayakar11111 || []).slice(1);
+            let sumAayakar = 0;
 
-            // Render RMIS
-            let rHtml = "";
-            (data.rmis || []).slice(1).forEach(r => {
-                rHtml += `<tr><td>${r[0] || ''}</td><td class="fw-bold text-primary">${(Number(r[1])||0).toLocaleString()}</td><td>${r[2] || ''}</td></tr>`;
+            aayakarRows.forEach(r => {
+                let isTotalRow = (r[0] || '').toString().includes("Total") || (r[0] || '').toString().includes("जम्मा");
+                if (!isTotalRow) {
+                    let vA = Number(r[1]) || 0;
+                    sumAayakar += vA;
+
+                    aHtml += `<tr>
+                        <td>${r[0] || ''}</td>
+                        <td class="fw-bold text-primary">${vA.toLocaleString()}</td>
+                        <td>${r[2] || ''}</td>
+                    </tr>`;
+                }
             });
+
+            aFootHtml = `<tr class="total-row border-top border-2 border-dark">
+                <td>Total (जम्मा)</td>
+                <td class="text-primary">${sumAayakar.toLocaleString()}</td>
+                <td>-</td>
+            </tr>`;
+
+            document.getElementById('aayakarTableBody').innerHTML = aHtml || `<tr><td colspan="3" class="text-muted p-3">कुनै विवरण फेला परेन</td></tr>`;
+            document.getElementById('aayakarTableFoot').innerHTML = aFootHtml;
+
+            // 3. Render RMIS Database Table
+            let rHtml = "";
+            let rFootHtml = "";
+            let rmisRows = (data.rmis || []).slice(1);
+            let sumRmis = 0;
+
+            rmisRows.forEach(r => {
+                let isTotalRow = (r[0] || '').toString().includes("Total") || (r[0] || '').toString().includes("जम्मा");
+                if (!isTotalRow) {
+                    let vR = Number(r[1]) || 0;
+                    sumRmis += vR;
+
+                    rHtml += `<tr>
+                        <td>${r[0] || ''}</td>
+                        <td class="fw-bold text-primary">${vR.toLocaleString()}</td>
+                        <td>${r[2] || ''}</td>
+                    </tr>`;
+                }
+            });
+
+            rFootHtml = `<tr class="total-row border-top border-2 border-dark">
+                <td>Total (जम्मा)</td>
+                <td class="text-primary">${sumRmis.toLocaleString()}</td>
+                <td>-</td>
+            </tr>`;
+
             document.getElementById('rmisTableBody').innerHTML = rHtml || `<tr><td colspan="3" class="text-muted p-3">कुनै विवरण फेला परेन</td></tr>`;
+            document.getElementById('rmisTableFoot').innerHTML = rFootHtml;
 
         } catch (e) {
             console.error("Error fetching sheet data", e);
