@@ -9,7 +9,6 @@
     <style>
         :root {
             --gov-blue: #0f3860;
-            --gov-light: #f1f5f9;
             --border-color: #e2e8f0;
         }
 
@@ -17,6 +16,49 @@
             background-color: #f8fafc;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             color: #334155;
+        }
+
+        /* Modern Notification Toast Container */
+        #notificationContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1080;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 380px;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        .custom-toast {
+            pointer-events: auto;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 12px 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 5px solid var(--gov-blue);
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            font-size: 0.875rem;
+            color: #1e293b;
+        }
+
+        .custom-toast.toast-success { border-left-color: #10b981; }
+        .custom-toast.toast-danger { border-left-color: #ef4444; }
+        .custom-toast.toast-info { border-left-color: #3b82f6; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
         }
 
         /* Login Layout */
@@ -82,18 +124,13 @@
             box-shadow: 0 0 0 0.15rem rgba(15, 56, 96, 0.15);
         }
 
-        .table-custom {
-            font-size: 0.875rem;
-        }
+        .table-custom { font-size: 0.875rem; }
         .table-custom th {
             background-color: #f1f5f9;
             color: #475569;
             font-weight: 600;
         }
-        .total-row {
-            background-color: #f8fafc !important;
-            font-weight: bold;
-        }
+        .total-row { background-color: #f8fafc !important; font-weight: bold; }
 
         input[readonly] {
             background-color: #f1f5f9 !important;
@@ -115,6 +152,9 @@
 </head>
 <body>
 
+    <!-- NOTIFICATION TOAST HOLDER -->
+    <div id="notificationContainer"></div>
+
     <!-- LOGIN SECTION -->
     <div id="loginPage">
         <div class="login-card text-center">
@@ -122,8 +162,6 @@
             <h6 class="fw-bold text-dark mb-0">नेपाल सरकार</h6>
             <h5 class="fw-bold mb-1" style="color: var(--gov-blue);">यातायात व्यवस्था कार्यालय</h5>
             <p class="small text-muted mb-4">बागलुङ, नेपाल</p>
-            
-            <div id="loginAlert" class="alert alert-danger d-none py-2 small">प्रयोक्ता र पासवर्ड मिलेन!</div>
             
             <form onsubmit="handleLogin(event)">
                 <div class="text-start mb-2">
@@ -378,11 +416,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- SECTION 1: MAIN LEDGER HEADS -->
                     <tr style="background-color: #f1f5f9; font-weight: bold;">
-                        <td colspan="2" style="border: 1px solid #000; text-align: left; padding: 6px 10px;">
-                            मुख्य लेजर शीर्षकहरु (Main Ledger Heads)
-                        </td>
+                        <td colspan="2" style="border: 1px solid #000; text-align: left; padding: 6px 10px;">मुख्य लेजर शीर्षकहरु (Main Ledger Heads)</td>
                     </tr>
                     <tr>
                         <td style="border: 1px solid #000; text-align: left; padding-left: 20px;">33341 (सवारी साधन कर)</td>
@@ -400,12 +435,8 @@
                         <td style="border: 1px solid #000; text-align: right; padding-right: 15px;">मुख्य लेजर जम्मा (Main Ledger Subtotal):</td>
                         <td style="border: 1px solid #000; text-align: right; padding-right: 10px;" id="vMainSubtotal">0</td>
                     </tr>
-
-                    <!-- SECTION 2: INDEPENDENT DATABASES -->
                     <tr style="background-color: #f1f5f9; font-weight: bold;">
-                        <td colspan="2" style="border: 1px solid #000; text-align: left; padding: 6px 10px;">
-                            छुट्टाछुट्टै डाटाबेस शीर्षकहरु (Independent Databases)
-                        </td>
+                        <td colspan="2" style="border: 1px solid #000; text-align: left; padding: 6px 10px;">छुट्टाछुट्टै डाटाबेस शीर्षकहरु (Independent Databases)</td>
                     </tr>
                     <tr>
                         <td style="border: 1px solid #000; text-align: left; padding-left: 20px;">आयकर 11111 (Aayakar Database)</td>
@@ -419,8 +450,6 @@
                         <td style="border: 1px solid #000; text-align: right; padding-right: 15px;">छुट्टाछुट्टै डाटाबेस जम्मा (Independent Subtotal):</td>
                         <td style="border: 1px solid #000; text-align: right; padding-right: 10px;" id="vIndependentSubtotal">0</td>
                     </tr>
-
-                    <!-- GRAND TOTAL -->
                     <tr style="font-weight: bold; font-size: 15px; background-color: #e2e8f0;">
                         <td style="border: 1px solid #000; text-align: right; padding: 8px 15px;">कुल जम्मा रकम (Grand Total):</td>
                         <td style="border: 1px solid #000; text-align: right; padding: 8px 10px;" id="vTotal">0</td>
@@ -443,6 +472,25 @@
     const AUTH_PASS = "R522051";
 
     let cachedSheetData = null;
+
+    // Toast notification display function
+    function showToast(message, type = "info") {
+        const container = document.getElementById("notificationContainer");
+        const toast = document.createElement("div");
+        toast.className = `custom-toast toast-${type}`;
+        
+        let icon = "ℹ️";
+        if (type === "success") icon = "✅";
+        if (type === "danger") icon = "⚠️";
+
+        toast.innerHTML = `<span style="font-size: 1.1rem;">${icon}</span><div class="fw-semibold">${message}</div>`;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = "fadeOut 0.3s forwards";
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    }
 
     function formatDateString(dateVal) {
         if (!dateVal) return '';
@@ -488,12 +536,17 @@
         if (document.getElementById("loginUser").value === AUTH_USER && document.getElementById("loginPass").value === AUTH_PASS) {
             sessionStorage.setItem("vrs_auth", "true");
             checkAuth();
+            showToast("लग-इन सफल भयो!", "success");
         } else {
-            document.getElementById("loginAlert").classList.remove("d-none");
+            showToast("प्रयोक्ता र पासवर्ड मिलेन!", "danger");
         }
     }
 
-    function handleLogout() { sessionStorage.removeItem("vrs_auth"); checkAuth(); }
+    function handleLogout() { 
+        sessionStorage.removeItem("vrs_auth"); 
+        checkAuth(); 
+        showToast("लग-आउट भयो", "info");
+    }
 
     function checkAuth() {
         if (sessionStorage.getItem("vrs_auth") === "true") {
@@ -594,7 +647,7 @@
             document.getElementById('rmisTableFoot').innerHTML = `<tr class="total-row"><td>Total (जम्मा)</td><td class="text-primary">${sumRmis.toLocaleString()}</td><td>-</td></tr>`;
 
         } catch (e) {
-            console.error("Error fetching sheet data", e);
+            showToast("डाटा सिन्क्रोनाइज गर्दा समस्या आयो", "danger");
         }
     }
 
@@ -610,15 +663,15 @@
     }
 
     function loadVoucherForDate() {
-        if (!cachedSheetData) return alert("Waiting for data...");
+        if (!cachedSheetData) return showToast("डाटा अझै लोड हुँदैछ, कृपया पर्खनुहोस्...", "info");
         let selectedDate = document.getElementById('reprintDateSelect').value.trim() || document.getElementById('reprintDateInput').value.trim();
-        if (!selectedDate) return alert("कृपया मिति छान्नुहोस्!");
+        if (!selectedDate) return showToast("कृपया मिति छान्नुहोस् वा टाइप गर्नुहोस्!", "danger");
 
         let ledgerRow = (cachedSheetData.ledger || []).find(r => formatDateString(r[0]) === selectedDate);
         let aayakarRow = (cachedSheetData.aayakar11111 || []).find(r => formatDateString(r[0]) === selectedDate);
         let rmisRow = (cachedSheetData.rmis || []).find(r => formatDateString(r[0]) === selectedDate);
 
-        if (!ledgerRow && !aayakarRow && !rmisRow) return alert(`रेकर्ड फेला परेन: ${selectedDate}`);
+        if (!ledgerRow && !aayakarRow && !rmisRow) return showToast(`कुनै रेकर्ड फेला परेन मिति: ${selectedDate}`, "danger");
 
         document.getElementById('bsDate').value = selectedDate;
         document.getElementById('h33341').value = ledgerRow ? (Number(ledgerRow[1]) || 0) : 0;
@@ -629,7 +682,7 @@
         document.getElementById('entryRemarks').value = (ledgerRow && ledgerRow[7]) || "दैनिक राजस्व दर्ता";
 
         update();
-        alert(`Loaded record for: ${selectedDate}`);
+        showToast(`Loaded record for: ${selectedDate}`, "success");
     }
 
     function initializeDenominations() {
@@ -758,10 +811,10 @@
                 body: JSON.stringify(payload) 
             });
 
-            alert("✅ Saved successfully!");
+            showToast("सफलतापूर्वक सेभ गरियो!", "success");
             setTimeout(() => loadSheetData(), 2000);
         } catch (e) {
-            alert("❌ Save failed. Check network connection.");
+            showToast("सेभ गर्न सकिएन। कनेक्सन जाँच्नुहोस्।", "danger");
         } finally {
             saveBtn.disabled = false;
             saveBtn.innerText = "☁️ Save to Databases";
