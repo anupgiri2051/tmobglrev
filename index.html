@@ -92,6 +92,14 @@
             font-weight: bold;
         }
 
+        /* Readonly Field Styling */
+        input[readonly] {
+            background-color: #e2e8f0 !important;
+            cursor: not-allowed;
+            font-weight: bold;
+            color: #0f3860;
+        }
+
         /* Print formatting */
         @media print {
             body * { visibility: hidden; }
@@ -232,8 +240,9 @@
                             <h6 class="fw-bold mb-3 border-bottom pb-2 text-primary" style="color: var(--gov-blue) !important;">दैनिक विवरण प्रविष्टि (Daily Collection Entry)</h6>
                             
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-danger">मिति (B.S. Date) *</label>
-                                <input type="text" id="bsDate" class="form-control" placeholder="उदा: २०८३-०४-०१ (YYYY-MM-DD)" oninput="update()">
+                                <label class="form-label small fw-bold text-danger">मिति (B.S. Date) - Automatic *</label>
+                                <!-- READONLY FIELD: Cannot be changed manually -->
+                                <input type="text" id="bsDate" class="form-control" readonly title="आजको मिति स्वतः चयन गरिएको छ। परिवर्तन गर्न मिल्दैन।">
                             </div>
 
                             <label class="form-label small fw-bold text-secondary mb-1">मुख्य लेजर शीर्षकहरु (Main Ledger Heads)</label>
@@ -360,6 +369,40 @@
     const AUTH_USER = "admin";
     const AUTH_PASS = "R522051";
 
+    // Helper: Calculate today's Nepali Date (B.S.)
+    function getTodayNepaliDate() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth() + 1;
+        const date = today.getDate();
+
+        // Approximate AD to BS conversion algorithm
+        let bsYear = year + 56;
+        let bsMonth = month + 8;
+        let bsDate = date + 15;
+
+        if (bsDate > 30) {
+            bsDate -= 30;
+            bsMonth += 1;
+        }
+        if (bsMonth > 12) {
+            bsMonth -= 12;
+            bsYear += 1;
+        }
+
+        const formattedMonth = bsMonth < 10 ? '0' + bsMonth : bsMonth;
+        const formattedDate = bsDate < 10 ? '0' + bsDate : bsDate;
+
+        return `${bsYear}-${formattedMonth}-${formattedDate}`;
+    }
+
+    function setAutoTodayBsDate() {
+        const dateInput = document.getElementById('bsDate');
+        if (dateInput) {
+            dateInput.value = getTodayNepaliDate();
+        }
+    }
+
     function handleLogin(e) {
         e.preventDefault();
         if (document.getElementById("loginUser").value === AUTH_USER && document.getElementById("loginPass").value === AUTH_PASS) {
@@ -376,6 +419,7 @@
         if (sessionStorage.getItem("vrs_auth") === "true") {
             document.getElementById("loginPage").classList.add("d-none");
             document.getElementById("appContainer").classList.remove("d-none");
+            setAutoTodayBsDate();
             loadSheetData();
         } else {
             document.getElementById("loginPage").classList.remove("d-none");
@@ -516,7 +560,7 @@
         const vRims = parseFloat(document.getElementById('hRims').value) || 0;
         const chq = parseFloat(document.getElementById('chequeAmt').value) || 0;
 
-        const mainSubtotal = v1 + v2 + v3; // End of row sum
+        const mainSubtotal = v1 + v2 + v3;
         const grandTotal = mainSubtotal + v4 + vRims;
 
         document.getElementById('mainHeadsSubtotalDisplay').innerText = mainSubtotal.toLocaleString();
@@ -549,7 +593,6 @@
 
     function printVoucher() {
         const dateBS = document.getElementById('bsDate').value.trim();
-        if (!dateBS) return alert("कृपया वि.सं. मिति (B.S. Date) प्रविष्टि गर्नुहोस्।");
 
         const v1 = parseFloat(document.getElementById('h33341').value) || 0;
         const v2 = parseFloat(document.getElementById('h14256').value) || 0;
@@ -574,7 +617,6 @@
 
     async function saveToGoogleSheet() {
         const dateBS = document.getElementById('bsDate').value.trim();
-        if (!dateBS) return alert("कृपया वि.सं. मिति (B.S. Date) प्रविष्टि गर्नुहोस्।");
 
         const saveBtn = document.getElementById('saveBtn');
         saveBtn.disabled = true;
@@ -611,6 +653,7 @@
     window.addEventListener('DOMContentLoaded', () => {
         initializeDenominations();
         checkAuth();
+        setAutoTodayBsDate();
     });
 </script>
 </body>
