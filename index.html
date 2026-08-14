@@ -9,20 +9,19 @@
     <style>
         :root {
             --gov-blue: #0f3860;
-            --gov-light-blue: #eef4fb;
-            --gov-border: #cbd5e1;
-            --gov-gray: #475569;
+            --gov-light: #f1f5f9;
+            --border-color: #e2e8f0;
         }
 
         body {
             background-color: #f8fafc;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            color: #1e293b;
+            color: #334155;
         }
 
         /* Login Layout */
         #loginPage {
-            background: linear-gradient(180deg, var(--gov-blue) 0%, #1e293b 100%);
+            background: linear-gradient(135deg, var(--gov-blue) 0%, #1e293b 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -31,42 +30,41 @@
         .login-card {
             background: #ffffff;
             border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
             width: 100%;
-            max-width: 400px;
-            padding: 2.5rem 2rem;
+            max-width: 380px;
+            padding: 2rem;
         }
 
-        /* Official Header Card */
+        /* Header */
         .gov-header {
             background: #ffffff;
-            border-bottom: 3px solid var(--gov-blue);
+            border-bottom: 2px solid var(--border-color);
             padding: 1rem 1.5rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
-        /* Custom Cards */
-        .card-official {
+        /* Cards & Tabs */
+        .card-custom {
             background: #ffffff;
-            border: 1px solid var(--gov-border);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
-        .card-header-official {
-            background-color: var(--gov-light-blue);
-            border-bottom: 1px solid var(--gov-border);
+        
+        .card-header-custom {
+            background-color: #f8fafc;
+            border-bottom: 1px solid var(--border-color);
             font-weight: 600;
             color: var(--gov-blue);
             padding: 0.75rem 1rem;
-            border-radius: 7px 7px 0 0;
+            border-radius: 8px 8px 0 0;
         }
 
-        /* Nav Pills */
         .nav-pills .nav-link {
-            color: var(--gov-gray);
+            color: #64748b;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             border-radius: 6px;
             padding: 0.5rem 1rem;
         }
@@ -75,32 +73,39 @@
             color: #ffffff;
         }
 
-        /* Inputs & Tables */
-        .form-control-sm { border-color: #cbd5e1; }
-        .form-control:focus {
-            border-color: var(--gov-blue);
-            box-shadow: 0 0 0 0.2rem rgba(15, 56, 96, 0.15);
+        .form-control, .form-select {
+            border-color: var(--border-color);
+            font-size: 0.9rem;
         }
-        .table-official th {
+        .form-control:focus, .form-select:focus {
+            border-color: var(--gov-blue);
+            box-shadow: 0 0 0 0.15rem rgba(15, 56, 96, 0.15);
+        }
+
+        .table-custom {
+            font-size: 0.875rem;
+        }
+        .table-custom th {
             background-color: #f1f5f9;
-            color: #334155;
+            color: #475569;
             font-weight: 600;
-            font-size: 0.85rem;
         }
         .total-row {
-            background-color: #e2e8f0 !important;
+            background-color: #f8fafc !important;
             font-weight: bold;
         }
 
-        /* Readonly Field Styling */
         input[readonly] {
-            background-color: #e2e8f0 !important;
+            background-color: #f1f5f9 !important;
             cursor: not-allowed;
-            font-weight: bold;
-            color: #0f3860;
+            font-weight: 600;
+            color: var(--gov-blue);
         }
 
-        /* Print formatting */
+        .variance-plus { color: #16a34a; font-weight: bold; }
+        .variance-minus { color: #dc2626; font-weight: bold; }
+        .variance-zero { color: #2563eb; font-weight: bold; }
+
         @media print {
             body * { visibility: hidden; }
             #printableVoucher, #printableVoucher * { visibility: visible; }
@@ -113,12 +118,12 @@
     <!-- LOGIN SECTION -->
     <div id="loginPage">
         <div class="login-card text-center">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg" alt="Nepal Emblem" height="70" class="mb-3">
-            <h6 class="fw-bold text-dark m-0">नेपाल सरकार</h6>
-            <h5 class="fw-bold text-primary m-0 mb-1" style="color: var(--gov-blue) !important;">यातायात व्यवस्था कार्यालय</h5>
-            <p class="small text-muted mb-3">बागलुङ, नेपाल</p>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg" alt="Nepal Emblem" height="65" class="mb-3">
+            <h6 class="fw-bold text-dark mb-0">नेपाल सरकार</h6>
+            <h5 class="fw-bold mb-1" style="color: var(--gov-blue);">यातायात व्यवस्था कार्यालय</h5>
+            <p class="small text-muted mb-4">बागलुङ, नेपाल</p>
             
-            <div id="loginAlert" class="alert alert-danger d-none p-2 small">प्रयोक्ता र पासवर्ड मिलेन! (Invalid Credentials)</div>
+            <div id="loginAlert" class="alert alert-danger d-none py-2 small">प्रयोक्ता र पासवर्ड मिलेन!</div>
             
             <form onsubmit="handleLogin(event)">
                 <div class="text-start mb-2">
@@ -129,7 +134,7 @@
                     <label class="form-label small fw-semibold text-secondary">Password</label>
                     <input type="password" id="loginPass" class="form-control" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="btn w-100 text-white fw-bold" style="background-color: var(--gov-blue);">लग-इन (Sign In)</button>
+                <button type="submit" class="btn w-100 text-white fw-bold py-2" style="background-color: var(--gov-blue);">लग-इन (Sign In)</button>
             </form>
         </div>
     </div>
@@ -140,14 +145,14 @@
         <!-- HEADER -->
         <div class="gov-header d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-3">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg" height="50" alt="Emblem">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg" height="48" alt="Emblem">
                 <div>
-                    <h6 class="m-0 fw-bold text-danger">प्रदेश सरकार | गण्डकी प्रदेश</h6>
+                    <span class="badge bg-danger mb-1" style="font-size: 0.7rem;">गण्डकी प्रदेश</span>
                     <h5 class="m-0 fw-bold" style="color: var(--gov-blue);">यातायात व्यवस्था कार्यालय, बागलुङ</h5>
-                    <small class="text-muted">दैनिक राजस्व लेखांकन तथा अभिलेख प्रणाली (Daily Revenue System)</small>
+                    <small class="text-muted">दैनिक राजस्व लेखांकन तथा अभिलेख प्रणाली</small>
                 </div>
             </div>
-            <button class="btn btn-outline-secondary btn-sm fw-semibold" onclick="handleLogout()">लग-आउट (Logout)</button>
+            <button class="btn btn-outline-secondary btn-sm" onclick="handleLogout()">लग-आउट</button>
         </div>
 
         <div class="container-fluid px-4" style="max-width: 1280px;">
@@ -161,21 +166,23 @@
             </ul>
 
             <!-- 1. MAIN LEDGER DATABASE VIEW -->
-            <div id="viewReport" class="card card-official mb-4">
-                <div class="card-header-official d-flex justify-content-between align-items-center">
-                    <span>मुख्य लेजर अभिलेख (Main Revenue Ledger - 33341, 14256, 14225)</span>
-                    <button class="btn btn-sm btn-outline-primary fw-semibold" onclick="loadSheetData()">🔄 Synchronize</button>
+            <div id="viewReport" class="card card-custom mb-4">
+                <div class="card-header-custom d-flex justify-content-between align-items-center">
+                    <span>मुख्य लेजर अभिलेख (Main Revenue Ledger)</span>
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadSheetData()">🔄 Synchronize</button>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover text-center table-official align-middle m-0">
+                        <table class="table table-bordered table-hover text-center table-custom align-middle m-0">
                             <thead>
                                 <tr>
                                     <th>Date (B.S.)</th>
                                     <th>33341</th>
                                     <th>14256</th>
                                     <th>14225</th>
-                                    <th class="table-primary">Ledger Total (End of Row)</th>
+                                    <th class="table-primary">Ledger Total</th>
+                                    <th>Cash Recon Total</th>
+                                    <th>Variance (+ / -)</th>
                                 </tr>
                             </thead>
                             <tbody id="reportTableBody"></tbody>
@@ -186,14 +193,14 @@
             </div>
 
             <!-- 2. AAYAKAR 11111 VIEW -->
-            <div id="viewAayakar" class="card card-official mb-4 d-none">
-                <div class="card-header-official d-flex justify-content-between align-items-center">
-                    <span>आयकर 11111 डाटाबेस अभिलेख (Aayakar 11111 Database Sheet)</span>
-                    <button class="btn btn-sm btn-outline-primary fw-semibold" onclick="loadSheetData()">🔄 Synchronize</button>
+            <div id="viewAayakar" class="card card-custom mb-4 d-none">
+                <div class="card-header-custom d-flex justify-content-between align-items-center">
+                    <span>आयकर 11111 डाटाबेस अभिलेख</span>
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadSheetData()">🔄 Synchronize</button>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover text-center table-official align-middle m-0">
+                        <table class="table table-bordered table-hover text-center table-custom align-middle m-0">
                             <thead>
                                 <tr>
                                     <th>Date (B.S.)</th>
@@ -209,14 +216,14 @@
             </div>
 
             <!-- 3. RMIS DATABASE VIEW -->
-            <div id="viewRmis" class="card card-official mb-4 d-none">
-                <div class="card-header-official d-flex justify-content-between align-items-center">
-                    <span>RMIS डाटाबेस अभिलेख (RMIS Database Sheet)</span>
-                    <button class="btn btn-sm btn-outline-primary fw-semibold" onclick="loadSheetData()">🔄 Synchronize</button>
+            <div id="viewRmis" class="card card-custom mb-4 d-none">
+                <div class="card-header-custom d-flex justify-content-between align-items-center">
+                    <span>RMIS डाटाबेस अभिलेख</span>
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadSheetData()">🔄 Synchronize</button>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover text-center table-official align-middle m-0">
+                        <table class="table table-bordered table-hover text-center table-custom align-middle m-0">
                             <thead>
                                 <tr>
                                     <th>Date (B.S.)</th>
@@ -233,36 +240,56 @@
 
             <!-- 4. ENTRY FORM VIEW -->
             <div id="viewEntry" class="d-none mb-4">
+                
+                <!-- REPRINT VOUCHER BAR -->
+                <div class="card card-custom p-3 mb-3" style="background-color: #f1f5f9;">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-3">
+                            <span class="fw-bold text-dark small">🖨️ पुराना भौचर लोड गर्नुहोस्:</span>
+                        </div>
+                        <div class="col-md-4">
+                            <select id="reprintDateSelect" class="form-select form-select-sm">
+                                <option value="">-- Select Date --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" id="reprintDateInput" class="form-control form-control-sm" placeholder="2083-04-26">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary btn-sm w-100 fw-bold" onclick="loadVoucherForDate()">🔍 Load Data</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row g-3">
                     <!-- ENTRY INPUTS -->
                     <div class="col-md-7">
-                        <div class="card card-official p-3">
-                            <h6 class="fw-bold mb-3 border-bottom pb-2 text-primary" style="color: var(--gov-blue) !important;">दैनिक विवरण प्रविष्टि (Daily Collection Entry)</h6>
+                        <div class="card card-custom p-3">
+                            <h6 class="fw-bold mb-3 border-bottom pb-2" style="color: var(--gov-blue);">दैनिक विवरण प्रविष्टि (Daily Entry)</h6>
                             
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-danger">मिति (B.S. Date) - Automatic *</label>
-                                <!-- READONLY FIELD: Cannot be changed manually -->
-                                <input type="text" id="bsDate" class="form-control" readonly title="आजको मिति स्वतः चयन गरिएको छ। परिवर्तन गर्न मिल्दैन।">
+                                <label class="form-label small fw-bold text-danger">मिति (Nepali Date B.S.)</label>
+                                <input type="text" id="bsDate" class="form-control form-control-sm" readonly>
                             </div>
 
                             <label class="form-label small fw-bold text-secondary mb-1">मुख्य लेजर शीर्षकहरु (Main Ledger Heads)</label>
-                            <div class="row g-2 mb-3">
+                            <div class="row g-2 mb-2">
                                 <div class="col-4">
-                                    <label class="small text-muted fw-semibold">33341</label>
-                                    <input type="number" id="h33341" class="form-control" value="0" oninput="update()">
+                                    <label class="small text-muted">33341</label>
+                                    <input type="number" id="h33341" class="form-control form-control-sm" value="0" oninput="update()">
                                 </div>
                                 <div class="col-4">
-                                    <label class="small text-muted fw-semibold">14256</label>
-                                    <input type="number" id="h14256" class="form-control" value="0" oninput="update()">
+                                    <label class="small text-muted">14256</label>
+                                    <input type="number" id="h14256" class="form-control form-control-sm" value="0" oninput="update()">
                                 </div>
                                 <div class="col-4">
-                                    <label class="small text-muted fw-semibold">14225</label>
-                                    <input type="number" id="h14225" class="form-control" value="0" oninput="update()">
+                                    <label class="small text-muted">14225</label>
+                                    <input type="number" id="h14225" class="form-control form-control-sm" value="0" oninput="update()">
                                 </div>
                             </div>
 
-                            <div class="p-2 mb-3 rounded d-flex justify-content-between align-items-center" style="background-color: var(--gov-light-blue); border: 1px solid #bfdbfe;">
-                                <span class="fw-bold small text-primary">Main Ledger Subtotal (Row Total):</span>
+                            <div class="p-2 mb-3 rounded d-flex justify-content-between align-items-center" style="background-color: #f1f5f9;">
+                                <span class="fw-bold small text-secondary">Main Ledger Subtotal:</span>
                                 <span class="fw-bold text-primary">Rs. <span id="mainHeadsSubtotalDisplay">0</span></span>
                             </div>
 
@@ -270,7 +297,7 @@
                             <div class="row g-2 mb-3">
                                 <div class="col-6">
                                     <div class="p-2 border rounded bg-light">
-                                        <label class="small fw-semibold text-dark">आयकर 11111 Amount</label>
+                                        <label class="small fw-semibold text-dark">आयकर 11111</label>
                                         <input type="number" id="hAayakar" class="form-control form-control-sm" value="0" oninput="update()">
                                     </div>
                                 </div>
@@ -284,7 +311,7 @@
 
                             <div class="mb-3">
                                 <label class="form-label small fw-bold text-secondary">कैफियत (Remarks)</label>
-                                <input type="text" id="entryRemarks" class="form-control form-control-sm" placeholder="विवरण लेख्नुहोस्...">
+                                <input type="text" id="entryRemarks" class="form-control form-control-sm" placeholder="विवरण...">
                             </div>
 
                             <div class="border-top pt-2 d-flex justify-content-between align-items-center">
@@ -294,10 +321,10 @@
                         </div>
                     </div>
 
-                    <!-- AUDIT / DENOMINATIONS -->
+                    <!-- RECONCILIATION -->
                     <div class="col-md-5">
-                        <div class="card card-official p-3">
-                            <h6 class="fw-bold mb-3 border-bottom pb-2 text-primary" style="color: var(--gov-blue) !important;">नगद तथा चेक भिडान (Cash Reconciliation)</h6>
+                        <div class="card card-custom p-3">
+                            <h6 class="fw-bold mb-3 border-bottom pb-2" style="color: var(--gov-blue);">नगद तथा चेक भिडान (Cash Recon)</h6>
                             
                             <div class="mb-2">
                                 <label class="small fw-semibold text-secondary">चेक रकम (Cheque Amount)</label>
@@ -307,15 +334,23 @@
                             <div id="cashItems" class="mb-2"></div>
 
                             <div class="d-flex justify-content-between fw-bold border-top pt-2 mb-2 small">
-                                <span>गन्ती भएको जम्मा (Calculated Money):</span>
+                                <span>गन्ती भएको जम्मा (Recon Money):</span>
                                 <span>Rs. <span id="moneySumUI">0</span></span>
+                            </div>
+
+                            <!-- VARIANCE COMPARISON -->
+                            <div class="p-2 border rounded mb-3 bg-light">
+                                <div class="d-flex justify-content-between align-items-center small fw-bold">
+                                    <span>फरक रकम (Variance):</span>
+                                    <span id="varianceDisplay" class="variance-zero">Rs. 0</span>
+                                </div>
                             </div>
 
                             <div id="uiStatus" class="p-2 text-center rounded fw-bold small mb-3 alert alert-success m-0">✅ REVENUE BALANCED</div>
 
                             <div class="d-grid gap-2">
-                                <button class="btn text-white fw-bold" id="saveBtn" style="background-color: var(--gov-blue);" onclick="saveToGoogleSheet()">☁️ Save to Databases</button>
-                                <button class="btn btn-outline-dark fw-bold" onclick="printVoucher()">🖨️ Print Voucher</button>
+                                <button class="btn text-white fw-bold py-2" id="saveBtn" style="background-color: var(--gov-blue);" onclick="saveToGoogleSheet()">☁️ Save to Databases</button>
+                                <button class="btn btn-outline-dark fw-bold py-2" onclick="printVoucher()">🖨️ Print Voucher</button>
                             </div>
                         </div>
                     </div>
@@ -325,39 +360,77 @@
         </div>
     </div>
 
-    <!-- PRINT VOUCHER TEMPLATE -->
+    <!-- CLEAN PRINT VOUCHER TEMPLATE -->
     <div id="printableVoucher" class="d-none">
-        <div style="border: 2px solid #000; padding: 25px; font-family: 'Times New Roman', serif;">
+        <div style="border: 2px solid #000; padding: 25px; font-family: Arial, sans-serif;">
             <div style="text-align: center; margin-bottom: 20px;">
                 <h3 style="margin: 0; font-weight: bold;">यातायात व्यवस्था कार्यालय, बागलुङ</h3>
                 <h5 style="margin: 5px 0 0 0;">राजस्व भौचर (Revenue Deposit Voucher)</h5>
             </div>
             <hr style="border-top: 1px solid #000; margin: 15px 0;">
-            <p style="font-size: 16px;"><strong>मिति वि.सं. (B.S. Date):</strong> <span id="vDate"></span></p>
+            <p style="font-size: 15px; margin-bottom: 15px;"><strong>मिति वि.सं. (B.S. Date):</strong> <span id="vDate"></span></p>
             
-            <table class="table table-bordered text-center align-middle" style="border: 1px solid #000; margin-top: 15px;">
-                <thead style="background-color: #f2f2f2;">
-                    <tr>
-                        <th style="border: 1px solid #000;">राजस्व शीर्षक (Revenue Head)</th>
-                        <th style="border: 1px solid #000;">रकम रु. (Amount)</th>
+            <table class="table table-bordered text-center align-middle" style="border: 1px solid #000; margin-top: 10px; width: 100%;">
+                <thead>
+                    <tr style="background-color: #f8fafc;">
+                        <th style="border: 1px solid #000; text-align: left; padding: 8px;">राजस्व विवरण / शीर्षक (Description / Head)</th>
+                        <th style="border: 1px solid #000; text-align: right; padding: 8px; width: 35%;">रकम रु. (Amount)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td style="border: 1px solid #000;">33341</td><td style="border: 1px solid #000;" id="v33341">0</td></tr>
-                    <tr><td style="border: 1px solid #000;">14256</td><td style="border: 1px solid #000;" id="v14256">0</td></tr>
-                    <tr><td style="border: 1px solid #000;">14225</td><td style="border: 1px solid #000;" id="v14225">0</td></tr>
-                    <tr><td style="border: 1px solid #000;">आयकर 11111</td><td style="border: 1px solid #000;" id="vAayakar">0</td></tr>
-                    <tr><td style="border: 1px solid #000;">RMIS Amount</td><td style="border: 1px solid #000;" id="vRims">0</td></tr>
-                    <tr style="font-weight: bold; background-color: #f8f9fa;">
-                        <td style="border: 1px solid #000;">जम्मा रकम (Grand Total)</td>
-                        <td style="border: 1px solid #000;" id="vTotal">0</td>
+                    <!-- SECTION 1: MAIN LEDGER HEADS -->
+                    <tr style="background-color: #f1f5f9; font-weight: bold;">
+                        <td colspan="2" style="border: 1px solid #000; text-align: left; padding: 6px 10px;">
+                            मुख्य लेजर शीर्षकहरु (Main Ledger Heads)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; text-align: left; padding-left: 20px;">33341 (सवारी साधन कर)</td>
+                        <td style="border: 1px solid #000; text-align: right; padding-right: 10px;" id="v33341">0</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; text-align: left; padding-left: 20px;">14256 (सवारी चालक अनुमतिपत्र)</td>
+                        <td style="border: 1px solid #000; text-align: right; padding-right: 10px;" id="v14256">0</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; text-align: left; padding-left: 20px;">14225 (सवारी दर्ता किताब तथा अन्य)</td>
+                        <td style="border: 1px solid #000; text-align: right; padding-right: 10px;" id="v14225">0</td>
+                    </tr>
+                    <tr style="font-weight: bold; background-color: #fafafa;">
+                        <td style="border: 1px solid #000; text-align: right; padding-right: 15px;">मुख्य लेजर जम्मा (Main Ledger Subtotal):</td>
+                        <td style="border: 1px solid #000; text-align: right; padding-right: 10px;" id="vMainSubtotal">0</td>
+                    </tr>
+
+                    <!-- SECTION 2: INDEPENDENT DATABASES -->
+                    <tr style="background-color: #f1f5f9; font-weight: bold;">
+                        <td colspan="2" style="border: 1px solid #000; text-align: left; padding: 6px 10px;">
+                            छुट्टाछुट्टै डाटाबेस शीर्षकहरु (Independent Databases)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; text-align: left; padding-left: 20px;">आयकर 11111 (Aayakar Database)</td>
+                        <td style="border: 1px solid #000; text-align: right; padding-right: 10px;" id="vAayakar">0</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; text-align: left; padding-left: 20px;">RMIS Amount (RMIS Database)</td>
+                        <td style="border: 1px solid #000; text-align: right; padding-right: 10px;" id="vRims">0</td>
+                    </tr>
+                    <tr style="font-weight: bold; background-color: #fafafa;">
+                        <td style="border: 1px solid #000; text-align: right; padding-right: 15px;">छुट्टाछुट्टै डाटाबेस जम्मा (Independent Subtotal):</td>
+                        <td style="border: 1px solid #000; text-align: right; padding-right: 10px;" id="vIndependentSubtotal">0</td>
+                    </tr>
+
+                    <!-- GRAND TOTAL -->
+                    <tr style="font-weight: bold; font-size: 15px; background-color: #e2e8f0;">
+                        <td style="border: 1px solid #000; text-align: right; padding: 8px 15px;">कुल जम्मा रकम (Grand Total):</td>
+                        <td style="border: 1px solid #000; text-align: right; padding: 8px 10px;" id="vTotal">0</td>
                     </tr>
                 </tbody>
             </table>
             
             <p style="margin-top: 20px; font-size: 14px;"><strong>कैफियत (Remarks):</strong> <span id="vRemarks"></span></p>
             
-            <div style="margin-top: 80px; display: flex; justify-content: space-between; text-align: center;">
+            <div style="margin-top: 70px; display: flex; justify-content: space-between; text-align: center;">
                 <div>-----------------------------------<br>फाँटवाला (Prepared By)</div>
                 <div>-----------------------------------<br>कार्यालय प्रमुख / लेखापाल</div>
             </div>
@@ -369,26 +442,35 @@
     const AUTH_USER = "admin";
     const AUTH_PASS = "R522051";
 
-    // Helper: Calculate today's Nepali Date (B.S.)
+    let cachedSheetData = null;
+
+    function formatDateString(dateVal) {
+        if (!dateVal) return '';
+        let str = String(dateVal).trim();
+        if (str.includes('T')) {
+            let parts = str.split('T')[0].split('-');
+            if (parts.length === 3) {
+                let y = parseInt(parts[0], 10);
+                let m = parseInt(parts[1], 10);
+                let d = parseInt(parts[2], 10) + 1;
+                return `${y}-${m < 10 ? '0' + m : m}-${d < 10 ? '0' + d : d}`;
+            }
+        }
+        return str;
+    }
+
     function getTodayNepaliDate() {
         const today = new Date();
         const year = today.getFullYear();
         const month = today.getMonth() + 1;
         const date = today.getDate();
 
-        // Approximate AD to BS conversion algorithm
         let bsYear = year + 56;
         let bsMonth = month + 8;
         let bsDate = date + 15;
 
-        if (bsDate > 30) {
-            bsDate -= 30;
-            bsMonth += 1;
-        }
-        if (bsMonth > 12) {
-            bsMonth -= 12;
-            bsYear += 1;
-        }
+        if (bsDate > 30) { bsDate -= 30; bsMonth += 1; }
+        if (bsMonth > 12) { bsMonth -= 12; bsYear += 1; }
 
         const formattedMonth = bsMonth < 10 ? '0' + bsMonth : bsMonth;
         const formattedDate = bsDate < 10 ? '0' + bsDate : bsDate;
@@ -398,9 +480,7 @@
 
     function setAutoTodayBsDate() {
         const dateInput = document.getElementById('bsDate');
-        if (dateInput) {
-            dateInput.value = getTodayNepaliDate();
-        }
+        if (dateInput) dateInput.value = getTodayNepaliDate();
     }
 
     function handleLogin(e) {
@@ -438,115 +518,125 @@
         try {
             const res = await fetch(APPS_SCRIPT_URL);
             const data = await res.json();
+            cachedSheetData = data;
             
-            // 1. Render Main Ledger Table
+            populateReprintDates(data.ledger || []);
+
+            // 1. Render Main Ledger
             let lHtml = "";
-            let lFootHtml = "";
             let ledgerRows = (data.ledger || []).slice(1);
-            let sum33341 = 0, sum14256 = 0, sum14225 = 0, sumTotal = 0;
+            let sum33341 = 0, sum14256 = 0, sum14225 = 0, sumTotal = 0, sumRecon = 0;
 
             ledgerRows.forEach(r => {
-                let isTotalRow = (r[0] || '').toString().includes("Total") || (r[0] || '').toString().includes("जम्मा");
+                let rawDate = r[0] || '';
+                let isTotalRow = rawDate.toString().includes("Total") || rawDate.toString().includes("जम्मा");
+                
                 if (!isTotalRow) {
                     let v1 = Number(r[1]) || 0;
                     let v2 = Number(r[2]) || 0;
                     let v3 = Number(r[3]) || 0;
                     let rTotal = Number(r[4]) || (v1 + v2 + v3);
+                    let reconVal = Number(r[5]) || rTotal;
+                    let varianceVal = r[6] || "0";
 
-                    sum33341 += v1;
-                    sum14256 += v2;
-                    sum14225 += v3;
-                    sumTotal += rTotal;
+                    sum33341 += v1; sum14256 += v2; sum14225 += v3;
+                    sumTotal += rTotal; sumRecon += reconVal;
 
                     lHtml += `<tr>
-                        <td>${r[0] || ''}</td>
+                        <td>${formatDateString(rawDate)}</td>
                         <td>${v1.toLocaleString()}</td>
                         <td>${v2.toLocaleString()}</td>
                         <td>${v3.toLocaleString()}</td>
                         <td class="fw-bold text-primary">${rTotal.toLocaleString()}</td>
+                        <td>${reconVal.toLocaleString()}</td>
+                        <td>${varianceVal}</td>
                     </tr>`;
                 }
             });
 
-            lFootHtml = `<tr class="total-row border-top border-2 border-dark">
+            document.getElementById('reportTableBody').innerHTML = lHtml || `<tr><td colspan="7" class="text-muted p-3">कुनै विवरण फेला परेन</td></tr>`;
+            document.getElementById('reportTableFoot').innerHTML = `<tr class="total-row border-top">
                 <td>Total (जम्मा)</td>
                 <td>${sum33341.toLocaleString()}</td>
                 <td>${sum14256.toLocaleString()}</td>
                 <td>${sum14225.toLocaleString()}</td>
                 <td class="text-primary">${sumTotal.toLocaleString()}</td>
+                <td>${sumRecon.toLocaleString()}</td>
+                <td>0</td>
             </tr>`;
 
-            document.getElementById('reportTableBody').innerHTML = lHtml || `<tr><td colspan="5" class="text-muted p-3">कुनै विवरण फेला परेन</td></tr>`;
-            document.getElementById('reportTableFoot').innerHTML = lFootHtml;
-
-            // 2. Render Aayakar 11111 Table
+            // 2. Render Aayakar
             let aHtml = "";
-            let aFootHtml = "";
-            let aayakarRows = (data.aayakar11111 || []).slice(1);
             let sumAayakar = 0;
-
-            aayakarRows.forEach(r => {
-                let isTotalRow = (r[0] || '').toString().includes("Total") || (r[0] || '').toString().includes("जम्मा");
-                if (!isTotalRow) {
+            (data.aayakar11111 || []).slice(1).forEach(r => {
+                let rawDate = r[0] || '';
+                if (!rawDate.toString().includes("Total") && !rawDate.toString().includes("जम्मा")) {
                     let vA = Number(r[1]) || 0;
                     sumAayakar += vA;
-
-                    aHtml += `<tr>
-                        <td>${r[0] || ''}</td>
-                        <td class="fw-bold text-primary">${vA.toLocaleString()}</td>
-                        <td>${r[2] || ''}</td>
-                    </tr>`;
+                    aHtml += `<tr><td>${formatDateString(rawDate)}</td><td class="fw-bold text-primary">${vA.toLocaleString()}</td><td>${r[2] || ''}</td></tr>`;
                 }
             });
-
-            aFootHtml = `<tr class="total-row border-top border-2 border-dark">
-                <td>Total (जम्मा)</td>
-                <td class="text-primary">${sumAayakar.toLocaleString()}</td>
-                <td>-</td>
-            </tr>`;
-
             document.getElementById('aayakarTableBody').innerHTML = aHtml || `<tr><td colspan="3" class="text-muted p-3">कुनै विवरण फेला परेन</td></tr>`;
-            document.getElementById('aayakarTableFoot').innerHTML = aFootHtml;
+            document.getElementById('aayakarTableFoot').innerHTML = `<tr class="total-row"><td>Total (जम्मा)</td><td class="text-primary">${sumAayakar.toLocaleString()}</td><td>-</td></tr>`;
 
-            // 3. Render RMIS Database Table
+            // 3. Render RMIS
             let rHtml = "";
-            let rFootHtml = "";
-            let rmisRows = (data.rmis || []).slice(1);
             let sumRmis = 0;
-
-            rmisRows.forEach(r => {
-                let isTotalRow = (r[0] || '').toString().includes("Total") || (r[0] || '').toString().includes("जम्मा");
-                if (!isTotalRow) {
+            (data.rmis || []).slice(1).forEach(r => {
+                let rawDate = r[0] || '';
+                if (!rawDate.toString().includes("Total") && !rawDate.toString().includes("जम्मा")) {
                     let vR = Number(r[1]) || 0;
                     sumRmis += vR;
-
-                    rHtml += `<tr>
-                        <td>${r[0] || ''}</td>
-                        <td class="fw-bold text-primary">${vR.toLocaleString()}</td>
-                        <td>${r[2] || ''}</td>
-                    </tr>`;
+                    rHtml += `<tr><td>${formatDateString(rawDate)}</td><td class="fw-bold text-primary">${vR.toLocaleString()}</td><td>${r[2] || ''}</td></tr>`;
                 }
             });
-
-            rFootHtml = `<tr class="total-row border-top border-2 border-dark">
-                <td>Total (जम्मा)</td>
-                <td class="text-primary">${sumRmis.toLocaleString()}</td>
-                <td>-</td>
-            </tr>`;
-
             document.getElementById('rmisTableBody').innerHTML = rHtml || `<tr><td colspan="3" class="text-muted p-3">कुनै विवरण फेला परेन</td></tr>`;
-            document.getElementById('rmisTableFoot').innerHTML = rFootHtml;
+            document.getElementById('rmisTableFoot').innerHTML = `<tr class="total-row"><td>Total (जम्मा)</td><td class="text-primary">${sumRmis.toLocaleString()}</td><td>-</td></tr>`;
 
         } catch (e) {
             console.error("Error fetching sheet data", e);
         }
     }
 
+    function populateReprintDates(ledgerRows) {
+        const select = document.getElementById('reprintDateSelect');
+        if (!select) return;
+        let dates = [];
+        ledgerRows.slice(1).forEach(r => {
+            let d = formatDateString(r[0]);
+            if (d && !d.includes("Total") && !d.includes("जम्मा") && !dates.includes(d)) dates.push(d);
+        });
+        select.innerHTML = `<option value="">-- Select Date --</option>` + dates.map(d => `<option value="${d}">${d}</option>`).join('');
+    }
+
+    function loadVoucherForDate() {
+        if (!cachedSheetData) return alert("Waiting for data...");
+        let selectedDate = document.getElementById('reprintDateSelect').value.trim() || document.getElementById('reprintDateInput').value.trim();
+        if (!selectedDate) return alert("कृपया मिति छान्नुहोस्!");
+
+        let ledgerRow = (cachedSheetData.ledger || []).find(r => formatDateString(r[0]) === selectedDate);
+        let aayakarRow = (cachedSheetData.aayakar11111 || []).find(r => formatDateString(r[0]) === selectedDate);
+        let rmisRow = (cachedSheetData.rmis || []).find(r => formatDateString(r[0]) === selectedDate);
+
+        if (!ledgerRow && !aayakarRow && !rmisRow) return alert(`रेकर्ड फेला परेन: ${selectedDate}`);
+
+        document.getElementById('bsDate').value = selectedDate;
+        document.getElementById('h33341').value = ledgerRow ? (Number(ledgerRow[1]) || 0) : 0;
+        document.getElementById('h14256').value = ledgerRow ? (Number(ledgerRow[2]) || 0) : 0;
+        document.getElementById('h14225').value = ledgerRow ? (Number(ledgerRow[3]) || 0) : 0;
+        document.getElementById('hAayakar').value = aayakarRow ? (Number(aayakarRow[1]) || 0) : 0;
+        document.getElementById('hRims').value = rmisRow ? (Number(rmisRow[1]) || 0) : 0;
+        document.getElementById('entryRemarks').value = (ledgerRow && ledgerRow[7]) || "दैनिक राजस्व दर्ता";
+
+        update();
+        alert(`Loaded record for: ${selectedDate}`);
+    }
+
     function initializeDenominations() {
         const denoms = [1000, 500, 100, 50, 20, 10, 5, 2, 1];
         document.getElementById('cashItems').innerHTML = denoms.map(d => `
             <div class="row g-1 align-items-center mb-1">
-                <div class="col-3 small fw-semibold text-secondary">Rs. ${d}</div>
+                <div class="col-3 small text-secondary">Rs. ${d}</div>
                 <div class="col-4"><input type="number" class="form-control form-control-sm c-in" data-val="${d}" value="0" oninput="update()"></div>
                 <div class="col-5 small text-end text-muted" id="calc_${d}">0</div>
             </div>`).join('');
@@ -577,16 +667,30 @@
         const totalMoney = cashOnly + chq;
         document.getElementById('moneySumUI').innerText = totalMoney.toLocaleString();
 
+        const diff = totalMoney - mainSubtotal;
+        const varianceBox = document.getElementById('varianceDisplay');
+
+        if (diff > 0) {
+            varianceBox.className = "variance-plus";
+            varianceBox.innerText = `+ Rs. ${diff.toLocaleString()}`;
+        } else if (diff < 0) {
+            varianceBox.className = "variance-minus";
+            varianceBox.innerText = `- Rs. ${Math.abs(diff).toLocaleString()}`;
+        } else {
+            varianceBox.className = "variance-zero";
+            varianceBox.innerText = `Rs. 0`;
+        }
+
         const statusBox = document.getElementById('uiStatus');
         const saveBtn = document.getElementById('saveBtn');
 
-        if (mainSubtotal === totalMoney) {
+        if (diff === 0) {
             statusBox.className = "p-2 text-center rounded fw-bold small mb-3 alert alert-success m-0";
             statusBox.innerHTML = "✅ REVENUE BALANCED";
             saveBtn.disabled = false;
         } else {
             statusBox.className = "p-2 text-center rounded fw-bold small mb-3 alert alert-danger m-0";
-            statusBox.innerHTML = `⚠️ UNBALANCED (Diff: Rs. ${Math.abs(mainSubtotal - totalMoney).toLocaleString()})`;
+            statusBox.innerHTML = `⚠️ UNBALANCED (Diff: Rs. ${Math.abs(diff).toLocaleString()})`;
             saveBtn.disabled = true;
         }
     }
@@ -599,15 +703,22 @@
         const v3 = parseFloat(document.getElementById('h14225').value) || 0;
         const v4 = parseFloat(document.getElementById('hAayakar').value) || 0;
         const vRims = parseFloat(document.getElementById('hRims').value) || 0;
-        const total = v1 + v2 + v3 + v4 + vRims;
+
+        const mainSubtotal = v1 + v2 + v3;
+        const independentSubtotal = v4 + vRims;
+        const grandTotal = mainSubtotal + independentSubtotal;
 
         document.getElementById('vDate').innerText = dateBS;
         document.getElementById('v33341').innerText = "Rs. " + v1.toLocaleString();
         document.getElementById('v14256').innerText = "Rs. " + v2.toLocaleString();
         document.getElementById('v14225').innerText = "Rs. " + v3.toLocaleString();
+        document.getElementById('vMainSubtotal').innerText = "Rs. " + mainSubtotal.toLocaleString();
+
         document.getElementById('vAayakar').innerText = "Rs. " + v4.toLocaleString();
         document.getElementById('vRims').innerText = "Rs. " + vRims.toLocaleString();
-        document.getElementById('vTotal').innerText = "Rs. " + total.toLocaleString();
+        document.getElementById('vIndependentSubtotal').innerText = "Rs. " + independentSubtotal.toLocaleString();
+
+        document.getElementById('vTotal').innerText = "Rs. " + grandTotal.toLocaleString();
         document.getElementById('vRemarks').innerText = document.getElementById('entryRemarks').value.trim() || "दैनिक राजस्व दर्ता";
 
         document.getElementById('printableVoucher').classList.remove('d-none');
@@ -617,6 +728,12 @@
 
     async function saveToGoogleSheet() {
         const dateBS = document.getElementById('bsDate').value.trim();
+        const chq = parseFloat(document.getElementById('chequeAmt').value) || 0;
+
+        let cashOnly = 0;
+        document.querySelectorAll('.c-in').forEach(i => {
+            cashOnly += (parseFloat(i.value) || 0) * parseFloat(i.getAttribute('data-val'));
+        });
 
         const saveBtn = document.getElementById('saveBtn');
         saveBtn.disabled = true;
@@ -629,6 +746,7 @@
             v14225: parseFloat(document.getElementById('h14225').value) || 0,
             vAayakar: parseFloat(document.getElementById('hAayakar').value) || 0,
             vRims: parseFloat(document.getElementById('hRims').value) || 0,
+            totalRecon: cashOnly + chq,
             remarks: document.getElementById('entryRemarks').value.trim() || "दैनिक राजस्व दर्ता"
         };
 
@@ -640,10 +758,10 @@
                 body: JSON.stringify(payload) 
             });
 
-            alert("✅ Data successfully saved to Databases!");
+            alert("✅ Saved successfully!");
             setTimeout(() => loadSheetData(), 2000);
         } catch (e) {
-            alert("❌ Save failed. Please check your network connection.");
+            alert("❌ Save failed. Check network connection.");
         } finally {
             saveBtn.disabled = false;
             saveBtn.innerText = "☁️ Save to Databases";
