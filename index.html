@@ -132,13 +132,6 @@
         }
         .total-row { background-color: #f8fafc !important; font-weight: bold; }
 
-        input[readonly] {
-            background-color: #f1f5f9 !important;
-            cursor: not-allowed;
-            font-weight: 600;
-            color: var(--gov-blue);
-        }
-
         .variance-plus { color: #16a34a; font-weight: bold; }
         .variance-minus { color: #dc2626; font-weight: bold; }
         .variance-zero { color: #2563eb; font-weight: bold; }
@@ -187,7 +180,7 @@
                 <div>
                     <span class="badge bg-danger mb-1" style="font-size: 0.7rem;">गण्डकी प्रदेश</span>
                     <h5 class="m-0 fw-bold" style="color: var(--gov-blue);">यातायात व्यवस्था कार्यालय, बागलुङ</h5>
-                    <small class="text-muted">दैनिक राजस्व लेखांकन तथा अभिलेख प्रणाली</small>
+                    <small class="text-muted">दैनिक राजस्व लेखांकन तथा मासिक प्रतिवेदन प्रणाली</small>
                 </div>
             </div>
             <button class="btn btn-outline-secondary btn-sm" onclick="handleLogout()">लग-आउट</button>
@@ -197,7 +190,8 @@
             
             <!-- NAVIGATION TABS -->
             <ul class="nav nav-pills mb-3 border-bottom pb-2">
-                <li class="nav-item"><button class="nav-link active me-2" id="btn-report" onclick="switchTab('report')">📊 Main Ledger Sheet</button></li>
+                <li class="nav-item"><button class="nav-link active me-2" id="btn-report" onclick="switchTab('report')">📋 Main Ledger Sheet</button></li>
+                <li class="nav-item"><button class="nav-link me-2" id="btn-monthly" onclick="switchTab('monthly')">📊 Monthly Summary Report</button></li>
                 <li class="nav-item"><button class="nav-link me-2" id="btn-aayakar" onclick="switchTab('aayakar')">📘 आयकर 11111 Sheet</button></li>
                 <li class="nav-item"><button class="nav-link me-2" id="btn-rmis" onclick="switchTab('rmis')">💜 RMIS Database Sheet</button></li>
                 <li class="nav-item"><button class="nav-link" id="btn-entry" onclick="switchTab('entry')">📝 Daily Revenue Entry</button></li>
@@ -230,7 +224,40 @@
                 </div>
             </div>
 
-            <!-- 2. AAYAKAR 11111 VIEW -->
+            <!-- 2. MONTHLY SUMMARY REPORT VIEW (NEW) -->
+            <div id="viewMonthly" class="card card-custom mb-4 d-none">
+                <div class="card-header-custom d-flex justify-content-between align-items-center">
+                    <span>मासिक प्रतिवेदन (Monthly Revenue Summary Report)</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <select id="monthlyFilterSelect" class="form-select form-select-sm" onchange="renderMonthlyReport()" style="width: auto;">
+                            <option value="ALL">-- All Months --</option>
+                        </select>
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadSheetData()">🔄 Synchronize</button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover text-center table-custom align-middle m-0">
+                            <thead>
+                                <tr>
+                                    <th>Month (YYYY-MM)</th>
+                                    <th>33341 (सवारी साधन कर)</th>
+                                    <th>14256 (सवारी चालक अनुमतिपत्र)</th>
+                                    <th>14225 (सवारी दर्ता)</th>
+                                    <th class="table-primary">Main Ledger Total</th>
+                                    <th class="table-info">आयकर 11111 Total</th>
+                                    <th class="table-warning">RMIS Total</th>
+                                    <th class="table-success">Grand Revenue Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="monthlyTableBody"></tbody>
+                            <tfoot id="monthlyTableFoot"></tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. AAYAKAR 11111 VIEW -->
             <div id="viewAayakar" class="card card-custom mb-4 d-none">
                 <div class="card-header-custom d-flex justify-content-between align-items-center">
                     <span>आयकर 11111 डाटाबेस अभिलेख</span>
@@ -253,7 +280,7 @@
                 </div>
             </div>
 
-            <!-- 3. RMIS DATABASE VIEW -->
+            <!-- 4. RMIS DATABASE VIEW -->
             <div id="viewRmis" class="card card-custom mb-4 d-none">
                 <div class="card-header-custom d-flex justify-content-between align-items-center">
                     <span>RMIS डाटाबेस अभिलेख</span>
@@ -276,7 +303,7 @@
                 </div>
             </div>
 
-            <!-- 4. ENTRY FORM VIEW -->
+            <!-- 5. ENTRY FORM VIEW -->
             <div id="viewEntry" class="d-none mb-4">
                 
                 <!-- REPRINT VOUCHER BAR -->
@@ -291,7 +318,7 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <input type="text" id="reprintDateInput" class="form-control form-control-sm" placeholder="2083-04-26">
+                            <input type="text" id="reprintDateInput" class="form-control form-control-sm" placeholder="YYYY-MM-DD">
                         </div>
                         <div class="col-md-2">
                             <button class="btn btn-primary btn-sm w-100 fw-bold" onclick="loadVoucherForDate()">🔍 Load Data</button>
@@ -305,9 +332,10 @@
                         <div class="card card-custom p-3">
                             <h6 class="fw-bold mb-3 border-bottom pb-2" style="color: var(--gov-blue);">दैनिक विवरण प्रविष्टि (Daily Entry)</h6>
                             
+                            <!-- MANUAL DATE INPUT -->
                             <div class="mb-3">
                                 <label class="form-label small fw-bold text-danger">मिति (Nepali Date B.S.)</label>
-                                <input type="text" id="bsDate" class="form-control form-control-sm" readonly>
+                                <input type="text" id="bsDate" class="form-control form-control-sm" placeholder="YYYY-MM-DD (e.g., 2083-04-29)">
                             </div>
 
                             <label class="form-label small fw-bold text-secondary mb-1">मुख्य लेजर शीर्षकहरु (Main Ledger Heads)</label>
@@ -473,7 +501,7 @@
 
     let cachedSheetData = null;
 
-    // Toast notification display function
+    // Toast Notification System
     function showToast(message, type = "info") {
         const container = document.getElementById("notificationContainer");
         const toast = document.createElement("div");
@@ -507,30 +535,6 @@
         return str;
     }
 
-    function getTodayNepaliDate() {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth() + 1;
-        const date = today.getDate();
-
-        let bsYear = year + 56;
-        let bsMonth = month + 8;
-        let bsDate = date + 15;
-
-        if (bsDate > 30) { bsDate -= 30; bsMonth += 1; }
-        if (bsMonth > 12) { bsMonth -= 12; bsYear += 1; }
-
-        const formattedMonth = bsMonth < 10 ? '0' + bsMonth : bsMonth;
-        const formattedDate = bsDate < 10 ? '0' + bsDate : bsDate;
-
-        return `${bsYear}-${formattedMonth}-${formattedDate}`;
-    }
-
-    function setAutoTodayBsDate() {
-        const dateInput = document.getElementById('bsDate');
-        if (dateInput) dateInput.value = getTodayNepaliDate();
-    }
-
     function handleLogin(e) {
         e.preventDefault();
         if (document.getElementById("loginUser").value === AUTH_USER && document.getElementById("loginPass").value === AUTH_PASS) {
@@ -552,7 +556,6 @@
         if (sessionStorage.getItem("vrs_auth") === "true") {
             document.getElementById("loginPage").classList.add("d-none");
             document.getElementById("appContainer").classList.remove("d-none");
-            setAutoTodayBsDate();
             loadSheetData();
         } else {
             document.getElementById("loginPage").classList.remove("d-none");
@@ -561,7 +564,7 @@
     }
 
     function switchTab(tab) {
-        ['report', 'aayakar', 'rmis', 'entry'].forEach(t => {
+        ['report', 'monthly', 'aayakar', 'rmis', 'entry'].forEach(t => {
             document.getElementById(`btn-${t}`).className = `nav-link ${tab === t ? 'active' : ''}`;
             document.getElementById(`view${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.toggle('d-none', tab !== t);
         });
@@ -646,9 +649,106 @@
             document.getElementById('rmisTableBody').innerHTML = rHtml || `<tr><td colspan="3" class="text-muted p-3">कुनै विवरण फेला परेन</td></tr>`;
             document.getElementById('rmisTableFoot').innerHTML = `<tr class="total-row"><td>Total (जम्मा)</td><td class="text-primary">${sumRmis.toLocaleString()}</td><td>-</td></tr>`;
 
+            // 4. Render Monthly Summary
+            renderMonthlyReport();
+
         } catch (e) {
             showToast("डाटा सिन्क्रोनाइज गर्दा समस्या आयो", "danger");
         }
+    }
+
+    function renderMonthlyReport() {
+        if (!cachedSheetData) return;
+
+        let monthlyMap = {};
+
+        // Aggregate Main Ledger
+        (cachedSheetData.ledger || []).slice(1).forEach(r => {
+            let dStr = formatDateString(r[0]);
+            if (dStr && dStr.length >= 7 && !dStr.includes("Total") && !dStr.includes("जम्मा")) {
+                let monthKey = dStr.substring(0, 7); // e.g. "2081-01"
+                if (!monthlyMap[monthKey]) {
+                    monthlyMap[monthKey] = { v33341: 0, v14256: 0, v14225: 0, aayakar: 0, rmis: 0 };
+                }
+                monthlyMap[monthKey].v33341 += Number(r[1]) || 0;
+                monthlyMap[monthKey].v14256 += Number(r[2]) || 0;
+                monthlyMap[monthKey].v14225 += Number(r[3]) || 0;
+            }
+        });
+
+        // Aggregate Aayakar
+        (cachedSheetData.aayakar11111 || []).slice(1).forEach(r => {
+            let dStr = formatDateString(r[0]);
+            if (dStr && dStr.length >= 7 && !dStr.includes("Total") && !dStr.includes("जम्मा")) {
+                let monthKey = dStr.substring(0, 7);
+                if (!monthlyMap[monthKey]) {
+                    monthlyMap[monthKey] = { v33341: 0, v14256: 0, v14225: 0, aayakar: 0, rmis: 0 };
+                }
+                monthlyMap[monthKey].aayakar += Number(r[1]) || 0;
+            }
+        });
+
+        // Aggregate RMIS
+        (cachedSheetData.rmis || []).slice(1).forEach(r => {
+            let dStr = formatDateString(r[0]);
+            if (dStr && dStr.length >= 7 && !dStr.includes("Total") && !dStr.includes("जम्मा")) {
+                let monthKey = dStr.substring(0, 7);
+                if (!monthlyMap[monthKey]) {
+                    monthlyMap[monthKey] = { v33341: 0, v14256: 0, v14225: 0, aayakar: 0, rmis: 0 };
+                }
+                monthlyMap[monthKey].rmis += Number(r[1]) || 0;
+            }
+        });
+
+        // Populate Dropdown Filter
+        let filterSelect = document.getElementById('monthlyFilterSelect');
+        let currentFilterVal = filterSelect.value;
+        let monthsList = Object.keys(monthlyMap).sort();
+        filterSelect.innerHTML = `<option value="ALL">-- All Months --</option>` + monthsList.map(m => `<option value="${m}">${m}</option>`).join('');
+        if (monthsList.includes(currentFilterVal)) filterSelect.value = currentFilterVal;
+
+        let selectedFilter = filterSelect.value;
+        let mHtml = "";
+        let g33341 = 0, g14256 = 0, g14225 = 0, gMain = 0, gAayakar = 0, gRmis = 0, gGrand = 0;
+
+        monthsList.forEach(mKey => {
+            if (selectedFilter === "ALL" || selectedFilter === mKey) {
+                let item = monthlyMap[mKey];
+                let mainTotal = item.v33341 + item.v14256 + item.v14225;
+                let grandTotal = mainTotal + item.aayakar + item.rmis;
+
+                g33341 += item.v33341;
+                g14256 += item.v14256;
+                g14225 += item.v14225;
+                gMain += mainTotal;
+                gAayakar += item.aayakar;
+                gRmis += item.rmis;
+                gGrand += grandTotal;
+
+                mHtml += `<tr>
+                    <td class="fw-bold">${mKey}</td>
+                    <td>${item.v33341.toLocaleString()}</td>
+                    <td>${item.v14256.toLocaleString()}</td>
+                    <td>${item.v14225.toLocaleString()}</td>
+                    <td class="fw-bold text-primary">${mainTotal.toLocaleString()}</td>
+                    <td class="fw-bold text-info">${item.aayakar.toLocaleString()}</td>
+                    <td class="fw-bold text-warning">${item.rmis.toLocaleString()}</td>
+                    <td class="fw-bold text-success">${grandTotal.toLocaleString()}</td>
+                </tr>`;
+            }
+        });
+
+        document.getElementById('monthlyTableBody').innerHTML = mHtml || `<tr><td colspan="8" class="text-muted p-3">कुनै विवरण फेला परेन</td></tr>`;
+        document.getElementById('monthlyTableFoot').innerHTML = `<tr class="total-row border-top">
+            <td>Total (जम्मा)</td>
+            <td>${g33341.toLocaleString()}</td>
+            <td>${g14256.toLocaleString()}</td>
+            <td>${g14225.toLocaleString()}</td>
+            <td class="text-primary">${gMain.toLocaleString()}</td>
+            <td class="text-info">${gAayakar.toLocaleString()}</td>
+            <td class="text-warning">${gRmis.toLocaleString()}</td>
+            <td class="text-success">${gGrand.toLocaleString()}</td>
+        </tr>`;
     }
 
     function populateReprintDates(ledgerRows) {
@@ -750,6 +850,10 @@
 
     function printVoucher() {
         const dateBS = document.getElementById('bsDate').value.trim();
+        if (!dateBS) {
+            showToast("कृपया पहिले मिति प्रविष्ट गर्नुहोस्!", "danger");
+            return;
+        }
 
         const v1 = parseFloat(document.getElementById('h33341').value) || 0;
         const v2 = parseFloat(document.getElementById('h14256').value) || 0;
@@ -781,6 +885,11 @@
 
     async function saveToGoogleSheet() {
         const dateBS = document.getElementById('bsDate').value.trim();
+        if (!dateBS) {
+            showToast("कृपया सेभ गर्नु अघि मिति प्रविष्ट गर्नुहोस्!", "danger");
+            return;
+        }
+
         const chq = parseFloat(document.getElementById('chequeAmt').value) || 0;
 
         let cashOnly = 0;
@@ -824,7 +933,6 @@
     window.addEventListener('DOMContentLoaded', () => {
         initializeDenominations();
         checkAuth();
-        setAutoTodayBsDate();
     });
 </script>
 </body>
