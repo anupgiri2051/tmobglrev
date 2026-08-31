@@ -86,6 +86,32 @@
             margin-bottom: 1.5rem;
         }
 
+        /* Dashboard Cards */
+        .dash-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .dash-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .dash-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+        }
+        .dash-value {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
         /* Cards & Tabs */
         .card-custom {
             background: #ffffff;
@@ -180,7 +206,7 @@
                 <div>
                     <span class="badge bg-danger mb-1" style="font-size: 0.7rem;">गण्डकी प्रदेश</span>
                     <h5 class="m-0 fw-bold" style="color: var(--gov-blue);">यातायात व्यवस्था कार्यालय, बागलुङ</h5>
-                    <small class="text-muted">दैनिक राजस्व लेखांकन तथा मासिक प्रतिवेदन प्रणाली</small>
+                    <small class="text-muted">दैनिक राजस्व लेखांकन तथा मासिक ड्यासबोर्ड प्रणाली</small>
                 </div>
             </div>
             <button class="btn btn-outline-secondary btn-sm" onclick="handleLogout()">लग-आउट</button>
@@ -188,6 +214,77 @@
 
         <div class="container-fluid px-4" style="max-width: 1280px;">
             
+            <!-- TOP MONTHLY DASHBOARD SECTION -->
+            <div class="card card-custom p-3 mb-4" style="background-color: #ffffff;">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="h6 fw-bold m-0" style="color: var(--gov-blue);">📊 Monthly Revenue Dashboard</span>
+                        <span class="badge bg-primary" id="dashSelectedMonthBadge">All Period</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="small text-muted fw-bold">Select Month:</label>
+                        <select id="dashboardMonthSelect" class="form-select form-select-sm" onchange="updateDashboardMetrics()" style="width: auto;">
+                            <option value="ALL">All Months</option>
+                        </select>
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadSheetData()">🔄 Sync Data</button>
+                    </div>
+                </div>
+
+                <!-- METRIC CARDS GRID -->
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="dash-card border-start border-4 border-primary">
+                            <div class="dash-title">Main Ledger Subtotal</div>
+                            <div class="dash-value text-primary" id="dashMainSubtotal">Rs. 0</div>
+                            <div class="small text-muted mt-1">33341 + 14256 + 14225</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="dash-card border-start border-4 border-info">
+                            <div class="dash-title">Aayakar 11111 Total</div>
+                            <div class="dash-value text-info" id="dashAayakarTotal">Rs. 0</div>
+                            <div class="small text-muted mt-1">आयकर खाता जम्मा</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="dash-card border-start border-4 border-warning">
+                            <div class="dash-title">RMIS Total</div>
+                            <div class="dash-value text-warning" id="dashRmisTotal">Rs. 0</div>
+                            <div class="small text-muted mt-1">RMIS प्रणाली जम्मा</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="dash-card border-start border-4 border-success">
+                            <div class="dash-title">Grand Monthly Total</div>
+                            <div class="dash-value text-success" id="dashGrandTotal">Rs. 0</div>
+                            <div class="small text-muted mt-1">कुल संकलित राजस्व</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HEAD BREAKDOWN BAR -->
+                <div class="row g-2 mt-2 pt-2 border-top">
+                    <div class="col-4">
+                        <div class="p-2 rounded bg-light d-flex justify-content-between align-items-center">
+                            <span class="small fw-semibold text-secondary">33341 (सवारी साधन कर):</span>
+                            <span class="fw-bold text-dark" id="dash33341">Rs. 0</span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 rounded bg-light d-flex justify-content-between align-items-center">
+                            <span class="small fw-semibold text-secondary">14256 (ड्राइभिङ लाइसेन्स):</span>
+                            <span class="fw-bold text-dark" id="dash14256">Rs. 0</span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 rounded bg-light d-flex justify-content-between align-items-center">
+                            <span class="small fw-semibold text-secondary">14225 (सवारी दर्ता):</span>
+                            <span class="fw-bold text-dark" id="dash14225">Rs. 0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- NAVIGATION TABS -->
             <ul class="nav nav-pills mb-3 border-bottom pb-2">
                 <li class="nav-item"><button class="nav-link active me-2" id="btn-report" onclick="switchTab('report')">📋 Main Ledger Sheet</button></li>
@@ -224,10 +321,10 @@
                 </div>
             </div>
 
-            <!-- 2. MONTHLY SUMMARY REPORT VIEW (NEW) -->
+            <!-- 2. MONTHLY SUMMARY REPORT VIEW -->
             <div id="viewMonthly" class="card card-custom mb-4 d-none">
                 <div class="card-header-custom d-flex justify-content-between align-items-center">
-                    <span>मासिक प्रतिवेदन (Monthly Revenue Summary Report)</span>
+                    <span>मासिक प्रतिवेदन तालिका (Monthly Summary Breakdown)</span>
                     <div class="d-flex align-items-center gap-2">
                         <select id="monthlyFilterSelect" class="form-select form-select-sm" onchange="renderMonthlyReport()" style="width: auto;">
                             <option value="ALL">-- All Months --</option>
@@ -500,6 +597,7 @@
     const AUTH_PASS = "R522051";
 
     let cachedSheetData = null;
+    let monthlyMapData = {};
 
     // Toast Notification System
     function showToast(message, type = "info") {
@@ -649,30 +747,31 @@
             document.getElementById('rmisTableBody').innerHTML = rHtml || `<tr><td colspan="3" class="text-muted p-3">कुनै विवरण फेला परेन</td></tr>`;
             document.getElementById('rmisTableFoot').innerHTML = `<tr class="total-row"><td>Total (जम्मा)</td><td class="text-primary">${sumRmis.toLocaleString()}</td><td>-</td></tr>`;
 
-            // 4. Render Monthly Summary
+            // 4. Render Monthly Summary & Dashboard
+            processMonthlyData();
             renderMonthlyReport();
+            updateDashboardMetrics();
 
         } catch (e) {
             showToast("डाटा सिन्क्रोनाइज गर्दा समस्या आयो", "danger");
         }
     }
 
-    function renderMonthlyReport() {
+    function processMonthlyData() {
         if (!cachedSheetData) return;
-
-        let monthlyMap = {};
+        monthlyMapData = {};
 
         // Aggregate Main Ledger
         (cachedSheetData.ledger || []).slice(1).forEach(r => {
             let dStr = formatDateString(r[0]);
             if (dStr && dStr.length >= 7 && !dStr.includes("Total") && !dStr.includes("जम्मा")) {
-                let monthKey = dStr.substring(0, 7); // e.g. "2081-01"
-                if (!monthlyMap[monthKey]) {
-                    monthlyMap[monthKey] = { v33341: 0, v14256: 0, v14225: 0, aayakar: 0, rmis: 0 };
+                let monthKey = dStr.substring(0, 7);
+                if (!monthlyMapData[monthKey]) {
+                    monthlyMapData[monthKey] = { v33341: 0, v14256: 0, v14225: 0, aayakar: 0, rmis: 0 };
                 }
-                monthlyMap[monthKey].v33341 += Number(r[1]) || 0;
-                monthlyMap[monthKey].v14256 += Number(r[2]) || 0;
-                monthlyMap[monthKey].v14225 += Number(r[3]) || 0;
+                monthlyMapData[monthKey].v33341 += Number(r[1]) || 0;
+                monthlyMapData[monthKey].v14256 += Number(r[2]) || 0;
+                monthlyMapData[monthKey].v14225 += Number(r[3]) || 0;
             }
         });
 
@@ -681,10 +780,10 @@
             let dStr = formatDateString(r[0]);
             if (dStr && dStr.length >= 7 && !dStr.includes("Total") && !dStr.includes("जम्मा")) {
                 let monthKey = dStr.substring(0, 7);
-                if (!monthlyMap[monthKey]) {
-                    monthlyMap[monthKey] = { v33341: 0, v14256: 0, v14225: 0, aayakar: 0, rmis: 0 };
+                if (!monthlyMapData[monthKey]) {
+                    monthlyMapData[monthKey] = { v33341: 0, v14256: 0, v14225: 0, aayakar: 0, rmis: 0 };
                 }
-                monthlyMap[monthKey].aayakar += Number(r[1]) || 0;
+                monthlyMapData[monthKey].aayakar += Number(r[1]) || 0;
             }
         });
 
@@ -693,27 +792,75 @@
             let dStr = formatDateString(r[0]);
             if (dStr && dStr.length >= 7 && !dStr.includes("Total") && !dStr.includes("जम्मा")) {
                 let monthKey = dStr.substring(0, 7);
-                if (!monthlyMap[monthKey]) {
-                    monthlyMap[monthKey] = { v33341: 0, v14256: 0, v14225: 0, aayakar: 0, rmis: 0 };
+                if (!monthlyMapData[monthKey]) {
+                    monthlyMapData[monthKey] = { v33341: 0, v14256: 0, v14225: 0, aayakar: 0, rmis: 0 };
                 }
-                monthlyMap[monthKey].rmis += Number(r[1]) || 0;
+                monthlyMapData[monthKey].rmis += Number(r[1]) || 0;
             }
         });
 
-        // Populate Dropdown Filter
-        let filterSelect = document.getElementById('monthlyFilterSelect');
-        let currentFilterVal = filterSelect.value;
-        let monthsList = Object.keys(monthlyMap).sort();
-        filterSelect.innerHTML = `<option value="ALL">-- All Months --</option>` + monthsList.map(m => `<option value="${m}">${m}</option>`).join('');
-        if (monthsList.includes(currentFilterVal)) filterSelect.value = currentFilterVal;
+        // Populate Dashboard & Report Dropdowns
+        let monthsList = Object.keys(monthlyMapData).sort();
+        
+        let dashSelect = document.getElementById('dashboardMonthSelect');
+        let reportSelect = document.getElementById('monthlyFilterSelect');
+        let currentDashVal = dashSelect.value;
+        let currentReportVal = reportSelect.value;
 
-        let selectedFilter = filterSelect.value;
+        let optionsHtml = `<option value="ALL">All Months</option>` + monthsList.map(m => `<option value="${m}">${m}</option>`).join('');
+        dashSelect.innerHTML = optionsHtml;
+        reportSelect.innerHTML = `<option value="ALL">-- All Months --</option>` + monthsList.map(m => `<option value="${m}">${m}</option>`).join('');
+
+        if (monthsList.includes(currentDashVal)) dashSelect.value = currentDashVal;
+        if (monthsList.includes(currentReportVal)) reportSelect.value = currentReportVal;
+    }
+
+    function updateDashboardMetrics() {
+        let selectedMonth = document.getElementById('dashboardMonthSelect').value;
+        document.getElementById('dashSelectedMonthBadge').innerText = selectedMonth === "ALL" ? "All Period" : selectedMonth;
+
+        let v33341 = 0, v14256 = 0, v14225 = 0, aayakar = 0, rmis = 0;
+
+        if (selectedMonth === "ALL") {
+            Object.values(monthlyMapData).forEach(item => {
+                v33341 += item.v33341;
+                v14256 += item.v14256;
+                v14225 += item.v14225;
+                aayakar += item.aayakar;
+                rmis += item.rmis;
+            });
+        } else if (monthlyMapData[selectedMonth]) {
+            let item = monthlyMapData[selectedMonth];
+            v33341 = item.v33341;
+            v14256 = item.v14256;
+            v14225 = item.v14225;
+            aayakar = item.aayakar;
+            rmis = item.rmis;
+        }
+
+        let mainSubtotal = v33341 + v14256 + v14225;
+        let grandTotal = mainSubtotal + aayakar + rmis;
+
+        document.getElementById('dashMainSubtotal').innerText = "Rs. " + mainSubtotal.toLocaleString();
+        document.getElementById('dashAayakarTotal').innerText = "Rs. " + aayakar.toLocaleString();
+        document.getElementById('dashRmisTotal').innerText = "Rs. " + rmis.toLocaleString();
+        document.getElementById('dashGrandTotal').innerText = "Rs. " + grandTotal.toLocaleString();
+
+        document.getElementById('dash33341').innerText = "Rs. " + v33341.toLocaleString();
+        document.getElementById('dash14256').innerText = "Rs. " + v14256.toLocaleString();
+        document.getElementById('dash14225').innerText = "Rs. " + v14225.toLocaleString();
+    }
+
+    function renderMonthlyReport() {
+        let selectedFilter = document.getElementById('monthlyFilterSelect').value;
+        let monthsList = Object.keys(monthlyMapData).sort();
+
         let mHtml = "";
         let g33341 = 0, g14256 = 0, g14225 = 0, gMain = 0, gAayakar = 0, gRmis = 0, gGrand = 0;
 
         monthsList.forEach(mKey => {
             if (selectedFilter === "ALL" || selectedFilter === mKey) {
-                let item = monthlyMap[mKey];
+                let item = monthlyMapData[mKey];
                 let mainTotal = item.v33341 + item.v14256 + item.v14225;
                 let grandTotal = mainTotal + item.aayakar + item.rmis;
 
