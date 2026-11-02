@@ -122,39 +122,40 @@
         </header>
 
         <div class="container-fluid px-4 py-4" style="max-width: 1600px;">
+            <!-- DASHBOARD SUMMARY METRICS -->
             <div class="pro-card p-4 mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
                     <div class="d-flex align-items-center gap-2">
                         <i data-lucide="bar-chart-3" class="text-primary" style="width: 20px;"></i>
-                        <span class="fw-bold">राजस्व ड्यासबोर्ड सारांश (Revenue Summary - FY 83/84)</span>
+                        <span class="fw-bold">राजस्व ड्यासबोर्ड सारांश (Revenue Summary - All Months Total FY 83/84)</span>
                     </div>
-                    <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 fw-semibold" onclick="loadSheetData()">
-                        <i data-lucide="refresh-cw" style="width: 14px;"></i> Sync Database
+                    <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 fw-semibold" onclick="loadAllMonthsDashboard()">
+                        <i data-lucide="refresh-cw" style="width: 14px;"></i> Sync All Months
                     </button>
                 </div>
 
                 <div class="row g-3">
                     <div class="col-md-3">
                         <div class="metric-box">
-                            <div class="metric-label">33341 (सवारी साधन कर)</div>
+                            <div class="metric-label">33341 (सवारी साधन कर - वार्षिक जम्मा)</div>
                             <div class="metric-val mono-num" style="color: var(--amount-main);" id="dash33341">Rs. 0</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="metric-box">
-                            <div class="metric-label">14256 (अनुमतिपत्र)</div>
+                            <div class="metric-label">14256 (अनुमतिपत्र - वार्षिक जम्मा)</div>
                             <div class="metric-val mono-num" style="color: var(--amount-aayakar);" id="dash14256">Rs. 0</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="metric-box">
-                            <div class="metric-label">14225 (सवारी दर्ता)</div>
+                            <div class="metric-label">14225 (सवारी दर्ता - वार्षिक जम्मा)</div>
                             <div class="metric-val mono-num" style="color: var(--amount-rmis);" id="dash14225">Rs. 0</div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="metric-box" style="border-color: #047857; background: rgba(4, 120, 87, 0.05);">
-                            <div class="metric-label" style="color: var(--amount-grand);">यो महिनाको जम्मा (Grand Total)</div>
+                            <div class="metric-label" style="color: var(--amount-grand);">सबै महिनाको कुल जम्मा (Grand Total)</div>
                             <div class="metric-val mono-num" style="color: var(--amount-grand);" id="dashGrandTotal">Rs. 0</div>
                         </div>
                     </div>
@@ -361,6 +362,7 @@
             document.getElementById("appContainer").classList.remove("d-none");
             setupMonthDropdown();
             loadSheetData();
+            loadAllMonthsDashboard();
         } else {
             document.getElementById("loginPage").classList.remove("d-none");
             document.getElementById("appContainer").classList.add("d-none");
@@ -386,6 +388,38 @@
         return str;
     }
 
+    // Function to calculate and show Total Amount of ALL MONTHS in Dashboard
+    async function loadAllMonthsDashboard() {
+        let global33341 = 0, global14256 = 0, global14225 = 0, globalGrand = 0;
+
+        for (const month of ALL_FISCAL_MONTHS) {
+            try {
+                const res = await fetch(`${APPS_SCRIPT_URL}?sheet=${month}`);
+                const data = await res.json();
+                let rows = data.data || [];
+
+                rows.slice(6).forEach(r => {
+                    let exactDate = formatExactBsDate(r[0]);
+                    let isSummary = exactDate && (exactDate.includes("जम्मा") || exactDate.includes("Total"));
+
+                    if (!isSummary) {
+                        global33341 += Number(r[1]) || 0;
+                        global14256 += Number(r[2]) || 0;
+                        global14225 += Number(r[6]) || 0;
+                        globalGrand += Number(r[11]) || 0;
+                    }
+                });
+            } catch (e) {
+                // If a month sheet does not exist yet, skip it safely
+            }
+        }
+
+        document.getElementById('dash33341').innerText = "Rs. " + global33341.toLocaleString();
+        document.getElementById('dash14256').innerText = "Rs. " + global14256.toLocaleString();
+        document.getElementById('dash14225').innerText = "Rs. " + global14225.toLocaleString();
+        document.getElementById('dashGrandTotal').innerText = "Rs. " + globalGrand.toLocaleString();
+    }
+
     async function loadSheetData() {
         const selectedTab = document.getElementById('sheetTabSelector').value;
         try {
@@ -394,18 +428,10 @@
             let rows = data.data || [];
 
             let html = "";
-            let total33341 = 0, total14256 = 0, total14225 = 0, totalGrand = 0;
 
             rows.slice(6).forEach(r => {
                 let exactDate = formatExactBsDate(r[0]);
                 let isSummary = exactDate && (exactDate.includes("जम्मा") || exactDate.includes("Total"));
-                
-                if (!isSummary) {
-                    total33341 += Number(r[1]) || 0;
-                    total14256 += Number(r[2]) || 0;
-                    total14225 += Number(r[6]) || 0;
-                    totalGrand += Number(r[11]) || 0;
-                }
 
                 html += `<tr class="${isSummary ? 'fw-bold bg-light' : ''}">
                     <td class="mono-num fw-bold">${exactDate}</td>
@@ -424,11 +450,6 @@
             });
 
             document.getElementById('liveTableBody').innerHTML = html || `<tr><td colspan="12" class="text-muted p-4">No records found for ${selectedTab}</td></tr>`;
-            document.getElementById('dash33341').innerText = "Rs. " + total33341.toLocaleString();
-            document.getElementById('dash14256').innerText = "Rs. " + total14256.toLocaleString();
-            document.getElementById('dash14225').innerText = "Rs. " + total14225.toLocaleString();
-            document.getElementById('dashGrandTotal').innerText = "Rs. " + totalGrand.toLocaleString();
-
             lucide.createIcons();
         } catch(e) {
             showToast("Failed to fetch Google Sheet data", "danger");
@@ -548,7 +569,10 @@
             });
 
             showToast("Data saved successfully!", "success");
-            setTimeout(() => loadSheetData(), 1500);
+            setTimeout(() => {
+                loadSheetData();
+                loadAllMonthsDashboard();
+            }, 1500);
         } catch (e) {
             showToast("Failed to save to database", "danger");
         } finally {
